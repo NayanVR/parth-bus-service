@@ -1,13 +1,19 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
+import {
+  httpBatchLink,
+  loggerLink,
+  splitLink,
+  unstable_httpBatchStreamLink,
+} from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
 import { useState } from "react";
 import SuperJSON from "superjson";
 
 import { type AppRouter } from "@/server/api/root";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const createQueryClient = () => new QueryClient();
 
@@ -48,15 +54,39 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
             process.env.NODE_ENV === "development" ||
             (op.direction === "down" && op.result instanceof Error),
         }),
-        unstable_httpBatchStreamLink({
-          transformer: SuperJSON,
-          url: getBaseUrl() + "/api/trpc",
-          headers: () => {
-            const headers = new Headers();
-            headers.set("x-trpc-source", "nextjs-react");
-            return headers;
+        splitLink({
+          condition(op) {
+            // Add logic here to return true for paths/routes that need to set cookies
+            return op.path.startsWith("auth.");
           },
+          true: httpBatchLink({
+            transformer: SuperJSON,
+            url: getBaseUrl() + "/api/trpc",
+            headers: () => {
+              const headers = new Headers();
+              headers.set("x-trpc-source", "react-no-stream");
+              return headers;
+            },
+          }),
+          false: unstable_httpBatchStreamLink({
+            transformer: SuperJSON,
+            url: getBaseUrl() + "/api/trpc",
+            headers: () => {
+              const headers = new Headers();
+              headers.set("x-trpc-source", "react-stream");
+              return headers;
+            },
+          }),
         }),
+        // unstable_httpBatchStreamLink({
+        //   transformer: SuperJSON,
+        //   url: getBaseUrl() + "/api/trpc",
+        //   headers: () => {
+        //     const headers = new Headers();
+        //     headers.set("x-trpc-source", "nextjs-react");
+        //     return headers;
+        //   },
+        // }),
       ],
     }),
   );
@@ -65,6 +95,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         {props.children}
+        <ReactQueryDevtools />
       </trpc.Provider>
     </QueryClientProvider>
   );
