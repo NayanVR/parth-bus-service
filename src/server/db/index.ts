@@ -13,11 +13,11 @@ const globalForDb = globalThis as unknown as {
 };
 
 const conn = globalForDb.conn ?? postgres({
-  host: process.env.DB_HOST!,
-  port: parseInt(process.env.DB_PORT!),
-  user: process.env.DB_USER!,
-  password: process.env.DB_PASSWORD!,
-  database: process.env.DB_NAME!,
+  host: env.DB_HOST,
+  port: parseInt(env.DB_PORT),
+  user: env.DB_USER,
+  password: env.DB_PASSWORD,
+  database: env.DB_NAME,
 });
 
 if (env.NODE_ENV !== "production") globalForDb.conn = conn;
