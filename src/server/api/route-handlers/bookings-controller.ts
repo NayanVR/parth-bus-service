@@ -48,6 +48,12 @@ export const getBookingsInIntervalHandler = async ({ ctx, input }: { ctx: TRPCCo
 export const updateBookingHandler = async ({ ctx, input }: { ctx: TRPCContext, input: UpdateBookingSchemaInput }) => {
     try {
         const res = await ctx.db.update(bookingsTable).set(input).where(eq(bookingsTable.id, input.id)).returning();
+        return {
+            status: 'success',
+            data: {
+                booking: res,
+            },
+        };
     } catch (err: any) {
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
@@ -58,9 +64,12 @@ export const updateBookingHandler = async ({ ctx, input }: { ctx: TRPCContext, i
 
 export const deleteBookingHandler = async ({ ctx, input: id }: { ctx: TRPCContext, input: number }) => {
     try {
-        await ctx.db.delete(bookingsTable).where(eq(bookingsTable.id, id));
+        const res = await ctx.db.delete(bookingsTable).where(eq(bookingsTable.id, id)).returning();
         return {
             status: 'success',
+            data: {
+                booking: res,
+            },
         };
     } catch (err: any) {
         throw new TRPCError({

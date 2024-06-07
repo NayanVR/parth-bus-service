@@ -3,6 +3,7 @@ import { z } from "zod";
 import { userRouter } from "./routers/user";
 import { authRouter } from "./routers/auth";
 import { adminRouter } from "./routers/admin";
+import { driverRouter } from "./routers/driver-duty";
 
 /**
  * This is the primary router for your server.
@@ -13,6 +14,7 @@ export const appRouter = createTRPCRouter({
   user: userRouter,
   auth: authRouter,
   admin: adminRouter,
+  driverDuty: driverRouter,
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
     .query(({ input }) => {
