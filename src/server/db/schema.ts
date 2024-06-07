@@ -62,3 +62,5 @@ export const vehiclesTable = pgTable('vehicles', {
 
 export type InsertUser = typeof usersTable.$inferInsert;
 export type SelectUser = typeof usersTable.$inferSelect;
+
+export type SelectBooking = typeof bookingsTable.$inferSelect;
