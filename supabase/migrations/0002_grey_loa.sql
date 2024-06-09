@@ -1,0 +1,1 @@
+ALTER TABLE "bookings" ALTER COLUMN "return_date" SET NOT NULL;

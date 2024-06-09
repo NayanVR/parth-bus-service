@@ -29,7 +29,7 @@ export const bookingsSchema = z.object(_baseBookingSchema)
         message: 'Advance payment cannot be more than estimated cost',
     })
     .refine((data) => data.travelFrom <= data.travelTo, {
-        path: ['travelDate'],
+        path: ['travelFrom'],
         message: 'Travel from date cannot be more than travel to date',
     })
     .refine((data) => data.bookingDate <= data.returnDate, {
@@ -46,7 +46,7 @@ export const updateBookingSchema = z.object({
         message: 'Advance payment cannot be more than estimated cost',
     })
     .refine((data) => data.travelFrom <= data.travelTo, {
-        path: ['travelDate'],
+        path: ['travelFrom'],
         message: 'Travel from date cannot be more than travel to date',
     })
     .refine((data) => data.bookingDate <= data.returnDate, {
@@ -58,7 +58,7 @@ export const getBookingsInIntervalSchema = z.object({
     from: z.date({ required_error: 'From date is required' }),
     to: z.date({ required_error: 'To date is required' }),
 }).refine((data) => data.from <= data.to, {
-    path: ['date'],
+    path: ['from'],
     message: 'From date cannot be more than to date',
 });
 

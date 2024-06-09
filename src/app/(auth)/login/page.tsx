@@ -1,45 +1,77 @@
 "use client";
 
 import { trpc } from "@/trpc/react";
-import React, { useState } from "react";
+import React from "react";
+import { useFormik } from "formik";
+import { toast } from "sonner";
+import { loginUserSchema } from "@/lib/types/user-schema";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toFormikValidate } from "zod-formik-adapter";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type Props = {};
 
 export default function Login({}: Props) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const router = useRouter();
 
   const login = trpc.auth.login.useMutation({
     onSuccess: (opts) => {
-      if (opts.status === "success") localStorage.setItem("token", opts.token);
+      router.push("/dashboard");
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error(error.message);
+    },
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validate: toFormikValidate(loginUserSchema),
+    onSubmit: async (values) => {
+      const res = login.mutateAsync(values);
+
+      toast.promise(res, {
+        loading: "Logging in...",
+        success: "Logged in successfully",
+      });
     },
   });
 
   return (
-    <div>
-      <div className="flex flex-col">
-        <h1>Login</h1>
-        <input
+    <main className="flex h-screen items-center justify-center bg-primary">
+      <form
+        className="flex w-full flex-col gap-2 rounded-md bg-background p-4 shadow-md sm:w-1/2 md:max-w-sm md:p-8"
+        onSubmit={formik.handleSubmit}
+      >
+        <h1 className="mb-2 text-center text-2xl font-bold">Login</h1>
+        <Input
+          id="email"
+          placeholder="Email"
           type="text"
-          className="border-2 border-gray-300 text-black"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={formik.values.email}
+          onChange={formik.handleChange}
+          error={formik.errors.email}
         />
-        <input
+        <Input
+          id="password"
+          placeholder="Password"
           type="password"
-          className="border-2 border-gray-300 text-black"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={formik.values.password}
+          onChange={formik.handleChange}
+          error={formik.errors.password}
         />
-        <button
-          onClick={async () => {
-            const { token } = await login.mutateAsync({ email, password });
-            localStorage.setItem("token", token);
-          }}
-        >
+        <Link className="my-2 text-sm hover:underline" href="/register">
+          Don't have an account? Register
+        </Link>
+        <Button className="text-md w-full" type="submit">
           Login
-        </button>
-      </div>
-    </div>
+        </Button>
+      </form>
+    </main>
   );
 }

@@ -35,6 +35,8 @@ export const loginHandler = async ({
     input: LoginUserInput;
 }) => {
     try {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
         if (input.email !== "abc@xyz.in") {
             throw new TRPCError({
                 code: 'BAD_REQUEST',

@@ -33,7 +33,7 @@ export const bookingsTable = pgTable('bookings', {
   noOfTravelDays: integer('no_of_travel_days').notNull().default(0),
   noOfPassengers: integer('no_of_passengers').notNull().default(0),
   bookingDate: timestamp('booking_date', { mode: 'date', withTimezone: true }).defaultNow().notNull(),
-  returnDate: timestamp('return_date', { mode: 'date', withTimezone: true }),
+  returnDate: timestamp('return_date', { mode: 'date', withTimezone: true }).notNull(),
   estimatedCost: real('estimated_cost').notNull().default(0),
   advancePayment: real('advance_payment').notNull().default(0),
   remainingPayment: real('remaining_payment').notNull().$default(() => sql`estimated_cost - advance_payment`),

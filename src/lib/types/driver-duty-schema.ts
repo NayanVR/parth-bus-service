@@ -21,7 +21,7 @@ const _baseDriverDutyVoucherSchema = {
 
 export const driverDutyVoucherSchema = z.object(_baseDriverDutyVoucherSchema)
     .refine((data) => data.odometerStart <= data.odometerEnd, {
-        path: ['odometer'],
+        path: ['odometerStart'],
         message: 'Odometer start cannot be more than odometer end',
     });
 
@@ -34,7 +34,7 @@ export const getDriverDutyVouchersInIntervalSchema = z.object({
     from: z.date({ required_error: 'From date is required' }),
     to: z.date({ required_error: 'To date is required' }),
 }).refine((data) => data.from <= data.to, {
-    path: ['date'],
+    path: ['from'],
     message: 'From date cannot be more than to date',
 });
 
