@@ -7,15 +7,14 @@ const _baseBookingSchema = {
         .min(1, 'Client address is required'),
     clientPhone: z.string({ required_error: 'Client phone is required' })
         .min(1, 'Client phone is required'),
-    clientAltPhone: z.string({ required_error: 'Client alternate phone is required' })
-        .min(1, 'Client alternate phone is required'),
-    vehicleId: z.number({ required_error: 'Vehicle id is required' }),
+    clientAltPhone: z.string(),
+    vehicleId: z.number({ required_error: 'Vehicle is required' }).gt(0, 'Vehicle is required'),
     travelPlace: z.string({ required_error: 'Travel place is required' })
         .min(1, 'Travel place is required'),
     travelFrom: z.date({ required_error: 'Travel from is required' }),
     travelTo: z.date({ required_error: 'Travel to is required' }),
     noOfTravelDays: z.number({ required_error: 'Number of travel days is required' }),
-    noOfPassengers: z.number({ required_error: 'Number of passengers is required' }),
+    noOfPassengers: z.number({ required_error: 'Number of passengers is required' }).gte(0, 'Number of passengers is required'),
     bookingDate: z.date({ required_error: 'Booking date is required' }),
     returnDate: z.date({ required_error: 'Return date is required' }),
     estimatedCost: z.number({ required_error: 'Estimated cost is required' }),
@@ -38,8 +37,8 @@ export const bookingsSchema = z.object(_baseBookingSchema)
     });
 
 export const updateBookingSchema = z.object({
-    ..._baseBookingSchema,
     id: z.number({ required_error: 'Booking id is required' }),
+    ..._baseBookingSchema,
 })
     .refine((data) => data.advancePayment <= data.estimatedCost, {
         path: ['advancePayment'],

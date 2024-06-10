@@ -5,6 +5,20 @@ import { formatIndianDateFromDate } from "@/lib/utils";
 import { SelectBooking } from "@/server/db/schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, EditIcon, Trash2Icon } from "lucide-react";
+import BookingDialog from "./booking-dialog";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { trpc } from "@/trpc/react";
 
 export const columns: ColumnDef<SelectBooking>[] = [
   {
@@ -89,23 +103,53 @@ export const columns: ColumnDef<SelectBooking>[] = [
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
+      const trpcUtils = trpc.useUtils();
+      const [isOpen, setIsOpen] = useState(false);
       const currentRow = row.original;
+      const deleteBooking = trpc.admin.deleteBooking.useMutation({
+        onSuccess: () => {
+          trpcUtils.admin.getBookingsInInterval.refetch();
+        },
+      });
+
       return (
         <div className="flex gap-2">
+          <BookingDialog
+            isOpen={isOpen}
+            setIsOpen={setIsOpen}
+            isEdit={true}
+            data={currentRow}
+          />
           <EditIcon
             className="cursor-pointer"
             onClick={() => {
-              // Open edit modal
+              setIsOpen(true);
             }}
             size={20}
           />
-          <Trash2Icon
-            className="cursor-pointer"
-            onClick={() => {
-              // Open delete modal
-            }}
-            size={20}
-          />
+          <AlertDialog>
+            <AlertDialogTrigger>
+              <Trash2Icon size={20} />
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently data from
+                  servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive"
+                  onClick={() => deleteBooking.mutate(currentRow.id)}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       );
     },

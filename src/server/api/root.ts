@@ -4,6 +4,7 @@ import { userRouter } from "./routers/user";
 import { authRouter } from "./routers/auth";
 import { adminRouter } from "./routers/admin";
 import { driverRouter } from "./routers/driver-duty";
+import { vehiclesRouter } from "./routers/vehicles";
 
 /**
  * This is the primary router for your server.
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
   auth: authRouter,
   admin: adminRouter,
   driverDuty: driverRouter,
+  vehicles: vehiclesRouter,
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
     .query(({ input }) => {

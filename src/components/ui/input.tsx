@@ -1,6 +1,8 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { TriangleAlertIcon } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "./hover-card";
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -10,7 +12,7 @@ export interface InputProps
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, error, type, ...props }, ref) => {
     return (
-      <>
+      <div className="relative">
         <input
           type={type}
           className={cn(
@@ -20,8 +22,21 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           {...props}
         />
-        {error && <p className="text-sm text-destructive">{error}</p>}
-      </>
+        {error && (
+          <HoverCard openDelay={100} closeDelay={100}>
+            <HoverCardTrigger className="absolute right-3 top-3 text-destructive">
+              <TriangleAlertIcon size={16} />
+            </HoverCardTrigger>
+            <HoverCardContent
+              className="z-[10000] text-sm text-destructive"
+              side="left"
+              align="center"
+            >
+              {error && <p>{error}</p>}
+            </HoverCardContent>
+          </HoverCard>
+        )}
+      </div>
     );
   },
 );

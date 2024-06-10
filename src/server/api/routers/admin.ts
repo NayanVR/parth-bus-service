@@ -4,8 +4,8 @@ import { createVehicleBookingHandler, deleteBookingHandler, getBookingsInInterva
 import { z } from "zod";
 
 export const adminRouter = createTRPCRouter({
+    getBookingsInInterval: protectedProcedure.input(getBookingsInIntervalSchema).query(getBookingsInIntervalHandler),
     createVehicleBooking: protectedProcedure.input(bookingsSchema).mutation(createVehicleBookingHandler),
     updateVehicleBooking: protectedProcedure.input(updateBookingSchema).mutation(updateBookingHandler),
-    getBookingsInInterval: protectedProcedure.input(getBookingsInIntervalSchema).mutation(getBookingsInIntervalHandler),
     deleteBooking: protectedProcedure.input(z.number()).mutation(deleteBookingHandler),
 });

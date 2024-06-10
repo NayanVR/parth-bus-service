@@ -4,7 +4,6 @@ import {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
-  VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -23,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import BookingDialog from "./booking-dialog";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -35,6 +35,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const table = useReactTable({
     data,
@@ -53,9 +54,9 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
+      <div className="flex items-center justify-between py-4">
         <Input
-          placeholder="Filter names..."
+          placeholder="Search names..."
           value={
             (table.getColumn("clientName")?.getFilterValue() as string) ?? ""
           }
@@ -64,6 +65,8 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-sm"
         />
+        <Button onClick={(_) => setIsOpen(true)}>Add New Booking</Button>
+        <BookingDialog isOpen={isOpen} setIsOpen={setIsOpen} isEdit={false} />
       </div>
       <div className="rounded-md border">
         <Table>

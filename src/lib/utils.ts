@@ -6,12 +6,13 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatIndianDateFromDate(date: Date) {
-  return date.toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
   })
+}
+
+export function daysBetweenDates(from: Date, to: Date) {
+  return Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24))
 }
