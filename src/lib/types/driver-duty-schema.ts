@@ -9,8 +9,7 @@ const _baseDriverDutyVoucherSchema = {
         .min(1, 'Client address is required'),
     clientPhone: z.string({ required_error: 'Client phone is required' })
         .min(1, 'Client phone is required'),
-    clientAltPhone: z.string({ required_error: 'Client alternate phone is required' })
-        .min(1, 'Client alternate phone is required'),
+    clientAltPhone: z.string(),
     vehicleId: z.number({ required_error: 'Vehicle id is required' }),
     driverExpense: z.number({ required_error: 'Driver expense is required' }),
     odometerStart: z.number({ required_error: 'Odometer start is required' }),

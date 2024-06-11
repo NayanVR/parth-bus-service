@@ -64,3 +64,10 @@ export type InsertUser = typeof usersTable.$inferInsert;
 export type SelectUser = typeof usersTable.$inferSelect;
 
 export type SelectBooking = typeof bookingsTable.$inferSelect;
+export type InsertBooking = typeof bookingsTable.$inferInsert;
+
+export type SelectDriverDutyVoucher = typeof driverDutyVouchersTable.$inferSelect;
+export type InsertDriverDutyVoucher = typeof driverDutyVouchersTable.$inferInsert;
+
+export type SelectVehicle = typeof vehiclesTable.$inferSelect;
+export type InsertVehicle = typeof vehiclesTable.$inferInsert;

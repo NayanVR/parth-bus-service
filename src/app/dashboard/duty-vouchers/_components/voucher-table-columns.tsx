@@ -1,11 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { formatIndianDateFromDate } from "@/lib/utils";
-import { SelectBooking } from "@/server/db/schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, EditIcon, Trash2Icon } from "lucide-react";
-import BookingDialog from "./booking-dialog";
 import { useState } from "react";
 import {
   AlertDialog,
@@ -19,25 +16,31 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { trpc } from "@/trpc/react";
+import { SelectDriverDutyVoucher } from "@/server/db/schema";
+import VoucherDialog from "./voucher-dialog";
 
-export const columns: ColumnDef<SelectBooking>[] = [
+export const columns: ColumnDef<SelectDriverDutyVoucher>[] = [
   {
     header: "ID",
     accessorKey: "id",
   },
   {
-    accessorKey: "clientName",
+    accessorKey: "driverName",
     header: ({ column }) => {
       return (
         <Button
           variant="link"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Client Name
+          Driver Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
+  },
+  {
+    header: "Client Name",
+    accessorKey: "clientName",
   },
   {
     header: "Client Address",
@@ -64,48 +67,24 @@ export const columns: ColumnDef<SelectBooking>[] = [
     },
   },
   {
-    header: "Travel Place",
-    accessorKey: "travelPlace",
+    header: "Driver Expense",
+    accessorKey: "driverExpense",
   },
   {
-    header: "Travel From",
-    accessorKey: "travelFrom",
-    cell: ({ row }) => formatIndianDateFromDate(row.original.travelFrom),
+    header: "Odometer Start",
+    accessorKey: "odometerStart",
   },
   {
-    header: "Travel To",
-    accessorKey: "travelTo",
-    cell: ({ row }) => formatIndianDateFromDate(row.original.travelTo),
+    header: "Odometer End",
+    accessorKey: "odometerEnd",
   },
   {
-    header: "No Of Travel Days",
-    accessorKey: "noOfTravelDays",
+    header: "Payment Collected",
+    accessorKey: "paymentCollected",
   },
   {
-    header: "No Of Passengers",
-    accessorKey: "noOfPassengers",
-  },
-  {
-    header: "Booking Date",
-    accessorKey: "bookingDate",
-    cell: ({ row }) => formatIndianDateFromDate(row.original.bookingDate),
-  },
-  {
-    header: "Return Date",
-    accessorKey: "returnDate",
-    cell: ({ row }) => formatIndianDateFromDate(row.original.returnDate),
-  },
-  {
-    header: "Estimated Cost",
-    accessorKey: "estimatedCost",
-  },
-  {
-    header: "Advance Payment",
-    accessorKey: "advancePayment",
-  },
-  {
-    header: "Remaining Payment",
-    accessorKey: "remainingPayment",
+    header: "Remarks",
+    accessorKey: "remarks",
   },
   {
     id: "actions",
@@ -114,15 +93,16 @@ export const columns: ColumnDef<SelectBooking>[] = [
       const trpcUtils = trpc.useUtils();
       const [isOpen, setIsOpen] = useState(false);
       const currentRow = row.original;
-      const deleteBooking = trpc.admin.deleteBooking.useMutation({
-        onSuccess: () => {
-          trpcUtils.admin.getBookingsInInterval.refetch();
-        },
-      });
+      const deleteDriverDutyVoucher =
+        trpc.driverDuty.deleteDriverDutyVoucher.useMutation({
+          onSuccess: () => {
+            trpcUtils.driverDuty.getDriverDutyVoucherInInterval.refetch();
+          },
+        });
 
       return (
         <div className="flex gap-2">
-          <BookingDialog
+          <VoucherDialog
             isOpen={isOpen}
             setIsOpen={setIsOpen}
             isEdit={true}
@@ -151,7 +131,7 @@ export const columns: ColumnDef<SelectBooking>[] = [
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive"
-                  onClick={() => deleteBooking.mutate(currentRow.id)}
+                  onClick={() => deleteDriverDutyVoucher.mutate(currentRow.id)}
                 >
                   Delete
                 </AlertDialogAction>

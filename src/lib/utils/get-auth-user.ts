@@ -8,12 +8,12 @@ export const getAuthUser = async ({
 }: {
     shouldRedirect?: boolean;
 } = {}) => {
-    const res = await api.user.getUser(undefined);
-    if (!res.data) {
-        if (shouldRedirect) {
-            redirect('/login');
-        }
-        return null;
-    }
-    return res.data;
+    return api.user.getUser(undefined)
+        .then((result) => result.data.user)
+        .catch((e) => {
+            if (e.code === 'UNAUTHORIZED' && shouldRedirect) {
+                redirect('/login');
+            }
+            return null;
+        });
 };
