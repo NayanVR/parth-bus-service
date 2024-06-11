@@ -10,9 +10,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { toFormikValidate } from "zod-formik-adapter";
 
-type Props = {};
-
-export default function Register(props: Props) {
+export default function Register() {
   const router = useRouter();
 
   const register = trpc.auth.register.useMutation({

@@ -9,11 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toFormikValidate } from "zod-formik-adapter";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
-type Props = {};
-
-export default function Login({}: Props) {
+export default function Login() {
   const router = useRouter();
 
   const login = trpc.auth.login.useMutation({
@@ -65,9 +62,11 @@ export default function Login({}: Props) {
           onChange={formik.handleChange}
           error={formik.errors.password}
         />
+        {/*
         <Link className="my-2 text-sm hover:underline" href="/register">
           Don't have an account? Register
         </Link>
+        */}
         <Button className="text-md w-full" type="submit">
           Login
         </Button>
