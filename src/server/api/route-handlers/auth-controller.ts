@@ -3,18 +3,25 @@ import { TRPCError } from '@trpc/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { env } from '@/env';
+import * as argon2 from "argon2";
+import { TRPCContext } from '../trpc-context';
+import { usersTable } from '@/server/db/schema';
+import { eq } from 'drizzle-orm';
 
-export const registerHandler = async ({
-    input
-}: {
-    input: CreateUserInput;
-}) => {
+export const registerHandler = async ({ ctx, input }: { ctx: TRPCContext, input: CreateUserInput }) => {
     try {
+        const hashedPassword = await argon2.hash(input.password);
+
+        const res = (await ctx.db.insert(usersTable).values({
+            email: input.email,
+            password: hashedPassword,
+        }).returning()).at(0);
+
         return {
             status: 'success',
             data: {
                 user: {
-                    email: input.email,
+                    email: res?.email,
                 },
             },
         };
@@ -29,18 +36,23 @@ export const registerHandler = async ({
     }
 }
 
-export const loginHandler = async ({
-    input
-}: {
-    input: LoginUserInput;
-}) => {
+export const loginHandler = async ({ ctx, input }: { ctx: TRPCContext, input: LoginUserInput }) => {
     try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const user = (await ctx.db.select().from(usersTable).where(eq(usersTable.email, input.email))).at(0);
 
-        if (input.email !== "abc@xyz.in") {
+        if (!user) {
             throw new TRPCError({
                 code: 'BAD_REQUEST',
-                message: 'Invalid email or password',
+                message: 'Email does not exist',
+            });
+        }
+
+        const validPassword = await argon2.verify(user.password, input.password);
+
+        if (!validPassword) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Invalid password',
             });
         }
 

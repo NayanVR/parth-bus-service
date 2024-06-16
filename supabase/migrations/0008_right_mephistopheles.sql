@@ -1,0 +1,1 @@
+ALTER TABLE "driver_duty_vouchers" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();

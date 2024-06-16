@@ -1,8 +1,59 @@
-import { vehiclesTable } from "@/server/db/schema";
+import { bookingsTable, maintenanceTable, vehiclesTable } from "@/server/db/schema";
 import { TRPCContext } from "../trpc-context";
 import { TRPCError } from "@trpc/server";
-import { CreateVehicleInput, UpdateVehicleInput } from "@/lib/types/vehicle-schema";
-import { eq } from "drizzle-orm";
+import { CreateVehicleInput, UpdateVehicleInput, VehicleOccupiedDatesInput } from "@/lib/types/vehicle-schema";
+import { eq, and, gte, lte } from "drizzle-orm";
+import { optimizeDateRanges } from "@/lib/utils";
+
+export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPCContext, input: VehicleOccupiedDatesInput }) {
+    try {
+        const res = await ctx.db.transaction(async (tx) => {
+            const bookingsRes = await tx.select({
+                from: bookingsTable.travelDateFrom,
+                to: bookingsTable.travelDateTo,
+            }).from(bookingsTable)
+                .where(
+                    and(
+                        eq(bookingsTable.vehicleId, input.vehicleId),
+                        and(
+                            gte(bookingsTable.travelDateFrom, input.from),
+                            lte(bookingsTable.travelDateTo, input.to)
+                        )
+                    )
+                );
+
+            const maintenancesRes = await tx.select({
+                from: maintenanceTable.maintenanceDateFrom,
+                to: maintenanceTable.maintenanceDateTo,
+            }).from(maintenanceTable)
+                .where(
+                    and(
+                        eq(maintenanceTable.vehicleId, input.vehicleId),
+                        and(
+                            gte(maintenanceTable.maintenanceDateFrom, input.from),
+                            lte(maintenanceTable.maintenanceDateTo, input.to)
+                        )
+                    )
+                );
+
+            return [...bookingsRes, ...maintenancesRes];
+        });
+
+        const optimizedDates = optimizeDateRanges(res);
+
+        return {
+            status: 'success',
+            data: {
+                occupiedDates: optimizedDates,
+            },
+        };
+    } catch (err: any) {
+        throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: err.message,
+        });
+    }
+}
 
 export async function getAllVehiclesHandler({ ctx }: { ctx: TRPCContext }) {
     try {

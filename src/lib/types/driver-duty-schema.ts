@@ -3,13 +3,13 @@ import { z } from "zod";
 const _baseDriverDutyVoucherSchema = {
     driverName: z.string({ required_error: 'Driver name is required' })
         .min(1, 'Driver name is required'),
+    clientId: z.number({ required_error: 'Client id is required' }),
     clientName: z.string({ required_error: 'Client name is required' })
         .min(1, 'Client name is required'),
     clientAddress: z.string({ required_error: 'Client address is required' })
         .min(1, 'Client address is required'),
-    clientPhone: z.string({ required_error: 'Client phone is required' })
-        .min(1, 'Client phone is required'),
-    clientAltPhone: z.string(),
+    clientPhone: z.number({ required_error: 'Client phone is required' }),
+    clientAltPhone: z.number({ required_error: 'Client alt phone is required' }),
     vehicleId: z.number({ required_error: 'Vehicle id is required' }),
     driverExpense: z.number({ required_error: 'Driver expense is required' }),
     odometerStart: z.number({ required_error: 'Odometer start is required' }),
@@ -22,12 +22,32 @@ export const driverDutyVoucherSchema = z.object(_baseDriverDutyVoucherSchema)
     .refine((data) => data.odometerStart <= data.odometerEnd, {
         path: ['odometerStart'],
         message: 'Odometer start cannot be more than odometer end',
+    })
+    .refine((data) => data.clientPhone.toString().length === 10, {
+        path: ['clientPhone'],
+        message: 'Client phone number should be 10 digits',
+    })
+    .refine((data) => data.clientAltPhone.toString().length === 10, {
+        path: ['clientAltPhone'],
+        message: 'Client alt phone number should be 10 digits',
     });
 
 export const updateDriverDutyVoucherSchema = z.object({
     ..._baseDriverDutyVoucherSchema,
-    id: z.number({ required_error: 'Driver duty voucher id is required' }),
-});
+    id: z.string({ required_error: 'Driver duty voucher id is required' }),
+})
+    .refine((data) => data.odometerStart <= data.odometerEnd, {
+        path: ['odometerStart'],
+        message: 'Odometer start cannot be more than odometer end',
+    })
+    .refine((data) => data.clientPhone.toString().length === 10, {
+        path: ['clientPhone'],
+        message: 'Client phone number should be 10 digits',
+    })
+    .refine((data) => data.clientAltPhone.toString().length === 10, {
+        path: ['clientAltPhone'],
+        message: 'Client alt phone number should be 10 digits',
+    });
 
 export const getDriverDutyVouchersInIntervalSchema = z.object({
     from: z.date({ required_error: 'From date is required' }),

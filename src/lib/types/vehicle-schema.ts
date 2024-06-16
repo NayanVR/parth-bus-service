@@ -14,5 +14,15 @@ export const updateVehicleSchema = z.object({
     ..._vehicleSchema,
 });
 
+export const vehicleOccupiedDatesSchema = z.object({
+    vehicleId: z.number({ required_error: 'Vehicle id is required' }),
+    from: z.date({ required_error: 'From date is required' }),
+    to: z.date({ required_error: 'To date is required' }),
+}).refine((data) => data.from <= data.to, {
+    path: ['from'],
+    message: 'From date cannot be more than to date',
+});
+
 export type CreateVehicleInput = z.infer<typeof createVehicleSchema>;
 export type UpdateVehicleInput = z.infer<typeof updateVehicleSchema>;
+export type VehicleOccupiedDatesInput = z.infer<typeof vehicleOccupiedDatesSchema>;

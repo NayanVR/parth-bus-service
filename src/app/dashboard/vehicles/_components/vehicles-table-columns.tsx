@@ -15,11 +15,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { trpc } from "@/trpc/react";
-import { SelectVehicle } from "@/server/db/schema";
+import { RouterOutputs, trpc } from "@/trpc/react";
 import VoucherDialog from "./vehicles-dialog";
 
-export const columns: ColumnDef<SelectVehicle>[] = [
+export const columns: ColumnDef<
+  RouterOutputs["vehicles"]["getAllVehicles"]["data"]["vehicles"][0]
+>[] = [
   {
     header: "ID",
     accessorKey: "id",
@@ -82,14 +83,15 @@ export const columns: ColumnDef<SelectVehicle>[] = [
           />
           <AlertDialog>
             <AlertDialogTrigger>
-              <Trash2Icon size={20} />
+              <Trash2Icon className="text-destructive" size={20} />
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently data from
-                  servers.
+                  This will delete all bookings and driver vouchers associated
+                  with this vehicle. This action cannot be undone. This will
+                  permanently data from servers.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

@@ -40,7 +40,7 @@ export default function Login() {
   });
 
   return (
-    <main className="flex h-screen items-center justify-center bg-primary">
+    <main className="bg-gradient flex h-screen items-center justify-center">
       <form
         className="flex w-full flex-col gap-2 rounded-md bg-background p-4 shadow-md sm:w-1/2 md:max-w-sm md:p-8"
         onSubmit={formik.handleSubmit}

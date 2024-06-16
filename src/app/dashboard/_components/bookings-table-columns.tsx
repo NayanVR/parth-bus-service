@@ -1,8 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { formatIndianDateFromDate } from "@/lib/utils";
-import { SelectBooking } from "@/server/db/schema";
+import { daysBetweenDates, formatIndianDateFromDate } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, EditIcon, Trash2Icon } from "lucide-react";
 import BookingDialog from "./booking-dialog";
@@ -18,12 +17,34 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { trpc } from "@/trpc/react";
+import { RouterOutputs, trpc } from "@/trpc/react";
+import { toast } from "sonner";
 
-export const columns: ColumnDef<SelectBooking>[] = [
+export const columns: ColumnDef<
+  RouterOutputs["bookings"]["getBookingsInInterval"]["data"]["bookings"][0]
+>[] = [
   {
     header: "ID",
     accessorKey: "id",
+  },
+  {
+    header: "Driver voucher",
+    accessorKey: "voucherId",
+    cell: ({ row }) => {
+      return (
+        <button
+          className="rounded-xl bg-muted p-1 px-3 transition-all hover:bg-green-700 hover:text-white"
+          onClick={() => {
+            navigator.clipboard.writeText(
+              `${window.location.origin}/duty-vouchers/${row.original.voucherId}`,
+            );
+            toast.success("Copied to clipboard");
+          }}
+        >
+          copy
+        </button>
+      );
+    },
   },
   {
     accessorKey: "clientName",
@@ -64,22 +85,28 @@ export const columns: ColumnDef<SelectBooking>[] = [
     },
   },
   {
-    header: "Travel Place",
-    accessorKey: "travelPlace",
+    header: "Travel Place From",
+    accessorKey: "travelPlaceFrom",
+  },
+  {
+    header: "Travel Place To",
+    accessorKey: "travelPlaceTo",
   },
   {
     header: "Travel From",
-    accessorKey: "travelFrom",
-    cell: ({ row }) => formatIndianDateFromDate(row.original.travelFrom),
+    accessorKey: "traveDatelFrom",
+    cell: ({ row }) => formatIndianDateFromDate(row.original.travelDateFrom),
   },
   {
     header: "Travel To",
-    accessorKey: "travelTo",
-    cell: ({ row }) => formatIndianDateFromDate(row.original.travelTo),
+    accessorKey: "travelDateTo",
+    cell: ({ row }) => formatIndianDateFromDate(row.original.travelDateTo),
   },
   {
     header: "No Of Travel Days",
     accessorKey: "noOfTravelDays",
+    cell: ({ row }) =>
+      daysBetweenDates(row.original.travelDateFrom, row.original.travelDateTo),
   },
   {
     header: "No Of Passengers",
@@ -89,11 +116,6 @@ export const columns: ColumnDef<SelectBooking>[] = [
     header: "Booking Date",
     accessorKey: "bookingDate",
     cell: ({ row }) => formatIndianDateFromDate(row.original.bookingDate),
-  },
-  {
-    header: "Return Date",
-    accessorKey: "returnDate",
-    cell: ({ row }) => formatIndianDateFromDate(row.original.returnDate),
   },
   {
     header: "Estimated Cost",
@@ -106,6 +128,7 @@ export const columns: ColumnDef<SelectBooking>[] = [
   {
     header: "Remaining Payment",
     accessorKey: "remainingPayment",
+    cell: ({ row }) => row.original.estimatedCost - row.original.advancePayment,
   },
   {
     id: "actions",
@@ -114,9 +137,9 @@ export const columns: ColumnDef<SelectBooking>[] = [
       const trpcUtils = trpc.useUtils();
       const [isOpen, setIsOpen] = useState(false);
       const currentRow = row.original;
-      const deleteBooking = trpc.admin.deleteBooking.useMutation({
+      const deleteBooking = trpc.bookings.deleteBooking.useMutation({
         onSuccess: () => {
-          trpcUtils.admin.getBookingsInInterval.refetch();
+          trpcUtils.bookings.getBookingsInInterval.refetch();
         },
       });
 
@@ -137,7 +160,7 @@ export const columns: ColumnDef<SelectBooking>[] = [
           />
           <AlertDialog>
             <AlertDialogTrigger>
-              <Trash2Icon size={20} />
+              <Trash2Icon className="text-destructive" size={20} />
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>

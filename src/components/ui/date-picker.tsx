@@ -12,15 +12,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { SelectSingleEventHandler } from "react-day-picker";
+import { Matcher, SelectSingleEventHandler } from "react-day-picker";
 
 type Props = {
   className?: string;
   date: Date;
   setDate: SelectSingleEventHandler;
+  disabled?: Matcher | Matcher[] | undefined;
 };
 
-export function DatePicker({ className, date, setDate }: Props) {
+export function DatePicker({ className, date, setDate, disabled }: Props) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -43,6 +44,7 @@ export function DatePicker({ className, date, setDate }: Props) {
           onSelect={setDate}
           initialFocus
           className={cn(className, "w-auto")}
+          disabled={disabled}
         />
       </PopoverContent>
     </Popover>

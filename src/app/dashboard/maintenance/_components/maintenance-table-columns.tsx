@@ -1,8 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, EditIcon, Trash2Icon } from "lucide-react";
+import { EditIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import {
   AlertDialog,
@@ -16,92 +15,46 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { RouterOutputs, trpc } from "@/trpc/react";
-import VoucherDialog from "./voucher-dialog";
-import { toast } from "sonner";
+import MaintenanceDialog from "./maintenance-dialog";
+import { formatIndianDateFromDate } from "@/lib/utils";
 
 export const columns: ColumnDef<
-  RouterOutputs["driverDuty"]["getDriverDutyVoucherInInterval"]["data"]["driverDutyVouchers"][0]
+  RouterOutputs["maintenance"]["getMaintenancesInInterval"]["data"]["maintenances"][0]
 >[] = [
   {
-    header: "URL",
+    header: "ID",
     accessorKey: "id",
-    cell: ({ row }) => {
-      return (
-        <button
-          className="rounded-xl bg-muted p-1 px-3 transition-all hover:bg-green-700 hover:text-white"
-          onClick={() => {
-            navigator.clipboard.writeText(
-              `${window.location.origin}/duty-vouchers/${row.original.id}`,
-            );
-            toast.success("Copied to clipboard");
-          }}
-        >
-          copy
-        </button>
-      );
-    },
   },
   {
-    accessorKey: "driverName",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="link"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Driver Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    header: "Client Name",
-    accessorKey: "clientName",
-  },
-  {
-    header: "Client Address",
-    accessorKey: "clientAddress",
-  },
-  {
-    header: "Client Phone",
-    accessorKey: "clientPhone",
-  },
-  {
-    header: "Client Alt Phone",
-    accessorKey: "clientAltPhone",
-  },
-  {
-    header: "Vehicle ID",
     accessorKey: "vehicleId",
+    header: "Vehicle ID",
     cell: ({ row }) => {
       const vehicles =
         trpc.vehicles.getAllVehicles.useQuery().data?.data.vehicles;
       const vehicle = vehicles?.find(
         (vehicle) => vehicle.id === row.original.vehicleId,
       );
-      return vehicle?.plateNumber ?? "N/A";
+      return vehicle?.plateNumber || "N/A";
     },
   },
   {
-    header: "Driver Expense",
-    accessorKey: "driverExpense",
+    accessorKey: "maintenanceCost",
+    header: "Maintenance Cost",
   },
   {
-    header: "Odometer Start",
-    accessorKey: "odometerStart",
+    accessorKey: "maintenanceDateFrom",
+    header: "Maintenance From",
+    cell: ({ row }) =>
+      formatIndianDateFromDate(row.original.maintenanceDateFrom),
   },
   {
-    header: "Odometer End",
-    accessorKey: "odometerEnd",
+    accessorKey: "maintenanceDateTo",
+    header: "Maintenance To",
+    cell: ({ row }) => formatIndianDateFromDate(row.original.maintenanceDateTo),
   },
   {
-    header: "Payment Collected",
-    accessorKey: "paymentCollected",
-  },
-  {
-    header: "Remarks",
-    accessorKey: "remarks",
+    accessorKey: "odometerKm",
+    header: "Odometer Km",
   },
   {
     id: "actions",
@@ -110,16 +63,15 @@ export const columns: ColumnDef<
       const trpcUtils = trpc.useUtils();
       const [isOpen, setIsOpen] = useState(false);
       const currentRow = row.original;
-      const deleteDriverDutyVoucher =
-        trpc.driverDuty.deleteDriverDutyVoucher.useMutation({
-          onSuccess: () => {
-            trpcUtils.driverDuty.getDriverDutyVoucherInInterval.refetch();
-          },
-        });
+      const deleteMaintenance = trpc.maintenance.deleteMaintenance.useMutation({
+        onSuccess: () => {
+          trpcUtils.maintenance.getMaintenancesInInterval.refetch();
+        },
+      });
 
       return (
         <div className="flex gap-2">
-          <VoucherDialog
+          <MaintenanceDialog
             isOpen={isOpen}
             setIsOpen={setIsOpen}
             isEdit={true}
@@ -148,7 +100,7 @@ export const columns: ColumnDef<
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive"
-                  onClick={() => deleteDriverDutyVoucher.mutate(currentRow.id)}
+                  onClick={() => deleteMaintenance.mutate(currentRow.id)}
                 >
                   Delete
                 </AlertDialogAction>

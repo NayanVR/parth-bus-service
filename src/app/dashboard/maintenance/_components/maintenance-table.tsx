@@ -21,22 +21,23 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useMemo, useState } from "react";
-import BookingDialog from "./booking-dialog";
-import { CSVLink } from "react-csv";
+import { useState } from "react";
+import MaintenanceDialog from "./maintenance-dialog";
+import { trpc } from "@/trpc/react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function BookingsDataTable<TData, TValue>({
+export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const vehicles = trpc.vehicles.getAllVehicles.useQuery().data?.data.vehicles;
 
   const table = useReactTable({
     data,
@@ -56,18 +57,28 @@ export function BookingsDataTable<TData, TValue>({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
-        <Input
-          placeholder="Search client name..."
+        {/* <Input
+          placeholder="Search plate number..."
           value={
-            (table.getColumn("clientName")?.getFilterValue() as string) ?? ""
+            (table.getColumn("vehicleId")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table.getColumn("clientName")?.setFilterValue(event.target.value)
+            table
+              .getColumn("vehicleId")
+              ?.setFilterValue(
+                vehicles?.find((vehicle) =>
+                  vehicle.plateNumber.includes(event.target.value),
+                )?.plateNumber ?? "",
+              )
           }
           className="max-w-sm"
+        /> */}
+        <Button onClick={(_) => setIsOpen(true)}>Add Maintenance</Button>
+        <MaintenanceDialog
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          isEdit={false}
         />
-        <Button onClick={(_) => setIsOpen(true)}>Add New Booking</Button>
-        <BookingDialog isOpen={isOpen} setIsOpen={setIsOpen} isEdit={false} />
       </div>
       <div className="rounded-md border">
         <Table>

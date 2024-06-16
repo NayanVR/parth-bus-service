@@ -22,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import BookingDialog from "./voucher-dialog";
+import VoucherDialog from "./voucher-dialog";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -56,7 +56,7 @@ export function DataTable<TData, TValue>({
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
         <Input
-          placeholder="Search names..."
+          placeholder="Search driver name..."
           value={
             (table.getColumn("driverName")?.getFilterValue() as string) ?? ""
           }
@@ -66,7 +66,7 @@ export function DataTable<TData, TValue>({
           className="max-w-sm"
         />
         <Button onClick={(_) => setIsOpen(true)}>Add New Voucher</Button>
-        <BookingDialog isOpen={isOpen} setIsOpen={setIsOpen} isEdit={false} />
+        <VoucherDialog isOpen={isOpen} setIsOpen={setIsOpen} isEdit={false} />
       </div>
       <div className="rounded-md border">
         <Table>

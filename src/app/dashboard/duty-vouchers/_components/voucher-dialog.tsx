@@ -38,12 +38,12 @@ export default function VoucherDialog({
 }: Props) {
   const trpcUtils = trpc.useUtils();
   const { data: vehiclesData } = trpc.vehicles.getAllVehicles.useQuery();
-  const createDriverDutyVoucher =
-    trpc.driverDuty.createDriverDutyVoucher.useMutation({
-      onSuccess: () => {
-        trpcUtils.driverDuty.getDriverDutyVoucherInInterval.refetch();
-      },
-    });
+  // const createDriverDutyVoucher =
+  //   trpc.driverDuty.createDriverDutyVoucher.useMutation({
+  //     onSuccess: () => {
+  //       trpcUtils.driverDuty.getDriverDutyVoucherInInterval.refetch();
+  //     },
+  //   });
   const updateDriverDutyVoucher =
     trpc.driverDuty.updateDriverDutyVoucher.useMutation({
       onSuccess: () => {
@@ -53,12 +53,13 @@ export default function VoucherDialog({
 
   const formik = useFormik({
     initialValues: {
-      driverName: data?.driverName ?? "",
+      clientId: data?.clientId!,
       clientName: data?.clientName ?? "",
       clientAddress: data?.clientAddress ?? "",
-      clientPhone: data?.clientPhone ?? "",
-      clientAltPhone: data?.clientAltPhone ?? "",
+      clientPhone: data?.clientPhone!,
+      clientAltPhone: data?.clientAltPhone!,
       vehicleId: data?.vehicleId ?? 0,
+      driverName: data?.driverName ?? "",
       driverExpense: data?.driverExpense ?? 0,
       odometerStart: data?.odometerStart ?? 0,
       odometerEnd: data?.odometerEnd ?? 0,
@@ -67,20 +68,20 @@ export default function VoucherDialog({
     } satisfies DriverDutyVoucherInput,
     validate: toFormikValidate(driverDutyVoucherSchema),
     onSubmit: async (values) => {
-      if (isEdit) {
-        const res = await updateDriverDutyVoucher.mutateAsync({
-          id: data?.id ?? 0,
-          ...values,
-        });
-        if (res.status === "success") {
-          setIsOpen(false);
-        }
-      } else {
-        const res = await createDriverDutyVoucher.mutateAsync(values);
-        if (res.status === "success") {
-          setIsOpen(false);
-        }
+      // if (isEdit) {
+      const res = await updateDriverDutyVoucher.mutateAsync({
+        id: data?.id!,
+        ...values,
+      });
+      if (res.status === "success") {
+        setIsOpen(false);
       }
+      // } else {
+      //   const res = await createDriverDutyVoucher.mutateAsync(values);
+      //   if (res.status === "success") {
+      //     setIsOpen(false);
+      //   }
+      // }
     },
   });
 

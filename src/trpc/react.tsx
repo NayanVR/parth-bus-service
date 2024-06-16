@@ -14,6 +14,7 @@ import SuperJSON from "superjson";
 
 import { type AppRouter } from "@/server/api/root";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { getBaseUrl } from "@/lib/utils";
 
 const createQueryClient = () => new QueryClient();
 
@@ -86,14 +87,8 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         {props.children}
-        <ReactQueryDevtools />
+        <ReactQueryDevtools buttonPosition="top-right" />
       </trpc.Provider>
     </QueryClientProvider>
   );
-}
-
-function getBaseUrl() {
-  if (typeof window !== "undefined") return window.location.origin;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return `http://localhost:${process.env.PORT ?? 3000}`;
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -24,12 +24,14 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { RouterOutputs, trpc } from "@/trpc/react";
 import { daysBetweenDates } from "@/lib/utils";
+import { BookingsDataRangeContext } from "../page";
+import { toast } from "sonner";
 
 type Props = {
   isOpen: boolean;
   setIsOpen: (newValue: boolean) => void;
   isEdit: boolean;
-  data?: RouterOutputs["admin"]["getBookingsInInterval"]["data"]["bookings"][0];
+  data?: RouterOutputs["bookings"]["getBookingsInInterval"]["data"]["bookings"][0];
 };
 
 export default function BookingDialog({
@@ -40,14 +42,16 @@ export default function BookingDialog({
 }: Props) {
   const trpcUtils = trpc.useUtils();
   const { data: vehiclesData } = trpc.vehicles.getAllVehicles.useQuery();
-  const createBooking = trpc.admin.createVehicleBooking.useMutation({
+  const { from, to } = useContext(BookingsDataRangeContext);
+
+  const createBooking = trpc.bookings.createVehicleBooking.useMutation({
     onSuccess: () => {
-      trpcUtils.admin.getBookingsInInterval.refetch();
+      trpcUtils.bookings.getBookingsInInterval.refetch();
     },
   });
-  const updateBooking = trpc.admin.updateVehicleBooking.useMutation({
+  const updateBooking = trpc.bookings.updateVehicleBooking.useMutation({
     onSuccess: () => {
-      trpcUtils.admin.getBookingsInInterval.refetch();
+      trpcUtils.bookings.getBookingsInInterval.refetch();
     },
   });
 
@@ -55,25 +59,35 @@ export default function BookingDialog({
     initialValues: {
       clientName: data?.clientName ?? "",
       clientAddress: data?.clientAddress ?? "",
-      clientPhone: data?.clientPhone ?? "",
-      clientAltPhone: data?.clientAltPhone ?? "",
+      clientPhone: data?.clientPhone!,
+      clientAltPhone: data?.clientAltPhone!,
       vehicleId: data?.vehicleId ?? 0,
-      travelPlace: data?.travelPlace ?? "",
-      travelFrom: data?.travelFrom ?? new Date(),
-      travelTo: data?.travelTo ?? new Date(),
-      noOfTravelDays: data?.noOfTravelDays ?? 0,
-      noOfPassengers: data?.noOfPassengers ?? 0,
+      travelPlaceFrom: data?.travelPlaceFrom ?? "",
+      travelPlaceTo: data?.travelPlaceTo ?? "",
+      travelDateFrom: data?.travelDateFrom ?? new Date(),
+      travelDateTo: data?.travelDateTo ?? new Date(),
+      noOfPassengers: data?.noOfPassengers!,
       bookingDate: data?.bookingDate ?? new Date(),
-      returnDate: data?.returnDate ?? new Date(),
-      estimatedCost: data?.estimatedCost ?? 0,
-      advancePayment: data?.advancePayment ?? 0,
-      remainingPayment: data?.remainingPayment ?? 0,
+      estimatedCost: data?.estimatedCost!,
+      advancePayment: data?.advancePayment!,
     } satisfies BookingsSchemaInput,
     validate: toFormikValidate(bookingsSchema),
     onSubmit: async (values) => {
+      if (
+        checkOccupancy(values.travelDateFrom) ||
+        checkOccupancy(values.travelDateTo)
+      ) {
+        toast.error("Vehicle is not available for the selected dates");
+        return;
+      }
       if (isEdit) {
+        if (data === undefined) {
+          toast.error("Something went wrong");
+          return;
+        }
         const res = await updateBooking.mutateAsync({
           id: data?.id ?? 0,
+          clientId: data?.clientId ?? 0,
           ...values,
         });
         if (res.status === "success") {
@@ -87,6 +101,36 @@ export default function BookingDialog({
       }
     },
   });
+
+  const occupiedDates =
+    trpc.vehicles.getVehicleOccupiedDates.useQuery({
+      vehicleId: formik.values.vehicleId,
+      from,
+      to,
+    }).data?.data.occupiedDates ?? [];
+
+  const noOfTravelDays = useMemo(() => {
+    if (formik.values.travelDateFrom && formik.values.travelDateTo) {
+      return daysBetweenDates(
+        formik.values.travelDateFrom,
+        formik.values.travelDateTo,
+      );
+    }
+    return 0;
+  }, [formik.values.travelDateFrom, formik.values.travelDateTo]);
+
+  const remainingPayment = useMemo(() => {
+    return formik.values.estimatedCost - formik.values.advancePayment;
+  }, [formik.values.estimatedCost, formik.values.advancePayment]);
+
+  function checkOccupancy(date: Date) {
+    if (date < new Date()) return true;
+    const dateFoundInRange = occupiedDates.find(
+      (occupiedDate) => date >= occupiedDate.from && date <= occupiedDate.to,
+    );
+    if (dateFoundInRange) return true;
+    return false;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -132,6 +176,7 @@ export default function BookingDialog({
               <Input
                 id="clientPhone"
                 placeholder="Client Phone"
+                type="number"
                 value={formik.values.clientPhone}
                 onChange={formik.handleChange}
                 error={formik.errors.clientPhone}
@@ -145,6 +190,7 @@ export default function BookingDialog({
               <Input
                 id="clientAltPhone"
                 placeholder="Client Alt Phone"
+                type="number"
                 value={formik.values.clientAltPhone}
                 onChange={formik.handleChange}
                 error={formik.errors.clientAltPhone}
@@ -158,6 +204,11 @@ export default function BookingDialog({
               <Select
                 value={formik.values.vehicleId.toString()}
                 onValueChange={(newVal) => {
+                  trpcUtils.vehicles.getVehicleOccupiedDates.refetch({
+                    vehicleId: Number(newVal),
+                    from,
+                    to,
+                  });
                   formik.setFieldValue("vehicleId", Number(newVal));
                 }}
               >
@@ -180,57 +231,56 @@ export default function BookingDialog({
               )}
               <label
                 className="mt-2 inline-block text-sm"
-                htmlFor="travelPlace"
+                htmlFor="travelPlaceFrom"
               >
-                Travel Place
+                Travel Place From
               </label>
               <Input
-                id="travelPlace"
-                placeholder="Travel Place"
-                value={formik.values.travelPlace}
+                id="travelPlaceFrom"
+                placeholder="Travel Place From"
+                value={formik.values.travelPlaceFrom}
                 onChange={formik.handleChange}
-                error={formik.errors.travelPlace}
+                error={formik.errors.travelPlaceFrom}
+              />
+              <label
+                className="mt-2 inline-block text-sm"
+                htmlFor="travelPlaceTo"
+              >
+                Travel Place To
+              </label>
+              <Input
+                id="travelPlaceTo"
+                placeholder="Travel Place To"
+                value={formik.values.travelPlaceTo}
+                onChange={formik.handleChange}
+                error={formik.errors.travelPlaceTo}
               />
               <label className="mt-2 inline-block text-sm" htmlFor="travelFrom">
-                Travel From
+                Travel Date From
               </label>
               <DatePicker
-                date={formik.values.travelFrom}
-                setDate={(date) => {
-                  formik.setFieldValue("travelFrom", date);
-                  if (date && date <= formik.values.travelTo) {
-                    formik.setFieldValue(
-                      "noOfTravelDays",
-                      daysBetweenDates(date, formik.values.travelTo) + 1,
-                    );
-                  }
-                }}
+                date={formik.values.travelDateFrom}
+                setDate={(date) => formik.setFieldValue("travelDateFrom", date)}
                 className="w-full"
+                disabled={checkOccupancy}
               />
-              {formik.errors.travelFrom && (
+              {formik.errors.travelDateFrom && (
                 <p className="text-sm text-destructive">
-                  {String(formik.errors.travelFrom)}
+                  {String(formik.errors.travelDateFrom)}
                 </p>
               )}
               <label className="mt-2 inline-block text-sm" htmlFor="travelTo">
-                Travel To
+                Travel Date To
               </label>
               <DatePicker
-                date={formik.values.travelTo}
-                setDate={(date) => {
-                  formik.setFieldValue("travelTo", date);
-                  if (date && date >= formik.values.travelFrom) {
-                    formik.setFieldValue(
-                      "noOfTravelDays",
-                      daysBetweenDates(formik.values.travelFrom, date) + 1,
-                    );
-                  }
-                }}
+                date={formik.values.travelDateTo}
+                setDate={(date) => formik.setFieldValue("travelDateTo", date)}
                 className="w-full"
+                disabled={checkOccupancy}
               />
-              {formik.errors.travelTo && (
+              {formik.errors.travelDateTo && (
                 <p className="text-sm text-destructive">
-                  {String(formik.errors.travelTo)}
+                  {String(formik.errors.travelDateTo)}
                 </p>
               )}
               <label
@@ -244,8 +294,7 @@ export default function BookingDialog({
                 id="noOfTravelDays"
                 placeholder="No Of Travel Days"
                 type="number"
-                value={formik.values.noOfTravelDays}
-                error={formik.errors.noOfTravelDays}
+                value={noOfTravelDays}
               />
               <label
                 className="mt-2 inline-block text-sm"
@@ -283,21 +332,6 @@ export default function BookingDialog({
                   {String(formik.errors.bookingDate)}
                 </p>
               )}
-              <label className="mt-2 inline-block text-sm" htmlFor="returnDate">
-                Return Date
-              </label>
-              <DatePicker
-                date={formik.values.returnDate}
-                setDate={(date) => {
-                  formik.setFieldValue("returnDate", date);
-                }}
-                className="w-full"
-              />
-              {formik.errors.returnDate && (
-                <p className="text-sm text-destructive">
-                  {String(formik.errors.returnDate)}
-                </p>
-              )}
               <label
                 className="mt-2 inline-block text-sm"
                 htmlFor="estimatedCost"
@@ -309,15 +343,7 @@ export default function BookingDialog({
                 placeholder="Estimated Cost"
                 type="number"
                 value={formik.values.estimatedCost}
-                onChange={(e) => {
-                  const data = Number(e.target.value);
-                  formik.setFieldValue("estimatedCost", data);
-                  if (data >= formik.values.advancePayment)
-                    formik.setFieldValue(
-                      "remainingPayment",
-                      data - formik.values.advancePayment,
-                    );
-                }}
+                onChange={formik.handleChange}
                 error={formik.errors.estimatedCost}
               />
               <label
@@ -331,15 +357,7 @@ export default function BookingDialog({
                 placeholder="Advance Payment"
                 type="number"
                 value={formik.values.advancePayment}
-                onChange={(e) => {
-                  const data = Number(e.target.value);
-                  formik.setFieldValue("advancePayment", data);
-                  if (data <= formik.values.estimatedCost)
-                    formik.setFieldValue(
-                      "remainingPayment",
-                      formik.values.estimatedCost - Number(data),
-                    );
-                }}
+                onChange={formik.handleChange}
                 error={formik.errors.advancePayment}
               />
               <label
@@ -353,8 +371,7 @@ export default function BookingDialog({
                 id="remainingPayment"
                 placeholder="Remaining Payment"
                 type="number"
-                value={formik.values.remainingPayment}
-                error={formik.errors.remainingPayment}
+                value={remainingPayment}
               />
             </div>
           </div>

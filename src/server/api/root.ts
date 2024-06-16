@@ -2,9 +2,10 @@ import { createCallerFactory, createTRPCRouter, publicProcedure } from "@/server
 import { z } from "zod";
 import { userRouter } from "./routers/user";
 import { authRouter } from "./routers/auth";
-import { adminRouter } from "./routers/admin";
+import { bookingsRouter } from "./routers/bookings";
 import { driverRouter } from "./routers/driver-duty";
 import { vehiclesRouter } from "./routers/vehicles";
+import { maintenanceRouter } from "./routers/maintenance";
 
 /**
  * This is the primary router for your server.
@@ -14,9 +15,10 @@ import { vehiclesRouter } from "./routers/vehicles";
 export const appRouter = createTRPCRouter({
   user: userRouter,
   auth: authRouter,
-  admin: adminRouter,
+  bookings: bookingsRouter,
   driverDuty: driverRouter,
   vehicles: vehiclesRouter,
+  maintenance: maintenanceRouter,
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
     .query(({ input }) => {

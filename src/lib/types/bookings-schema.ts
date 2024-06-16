@@ -5,21 +5,19 @@ const _baseBookingSchema = {
         .min(1, 'Client name is required'),
     clientAddress: z.string({ required_error: 'Client address is required' })
         .min(1, 'Client address is required'),
-    clientPhone: z.string({ required_error: 'Client phone is required' })
-        .min(1, 'Client phone is required'),
-    clientAltPhone: z.string(),
+    clientPhone: z.number({ required_error: 'Client phone is required' }),
+    clientAltPhone: z.number({ required_error: 'Client alt phone is required' }),
     vehicleId: z.number({ required_error: 'Vehicle is required' }).gt(0, 'Vehicle is required'),
-    travelPlace: z.string({ required_error: 'Travel place is required' })
+    travelPlaceFrom: z.string({ required_error: 'Travel place is required' })
         .min(1, 'Travel place is required'),
-    travelFrom: z.date({ required_error: 'Travel from is required' }),
-    travelTo: z.date({ required_error: 'Travel to is required' }),
-    noOfTravelDays: z.number({ required_error: 'Number of travel days is required' }),
+    travelPlaceTo: z.string({ required_error: 'Travel place is required' })
+        .min(1, 'Travel place is required'),
+    travelDateFrom: z.date({ required_error: 'Travel from is required' }),
+    travelDateTo: z.date({ required_error: 'Travel to is required' }),
     noOfPassengers: z.number({ required_error: 'Number of passengers is required' }).gte(0, 'Number of passengers is required'),
     bookingDate: z.date({ required_error: 'Booking date is required' }),
-    returnDate: z.date({ required_error: 'Return date is required' }),
     estimatedCost: z.number({ required_error: 'Estimated cost is required' }),
     advancePayment: z.number({ required_error: 'Advance payment is required' }),
-    remainingPayment: z.number({ required_error: 'Remaining payment is required' }),
 };
 
 export const bookingsSchema = z.object(_baseBookingSchema)
@@ -27,30 +25,39 @@ export const bookingsSchema = z.object(_baseBookingSchema)
         path: ['advancePayment'],
         message: 'Advance payment cannot be more than estimated cost',
     })
-    .refine((data) => data.travelFrom <= data.travelTo, {
-        path: ['travelFrom'],
+    .refine((data) => data.travelDateFrom <= data.travelDateTo, {
+        path: ['travelDateFrom'],
         message: 'Travel from date cannot be more than travel to date',
     })
-    .refine((data) => data.bookingDate <= data.returnDate, {
-        path: ['bookingDate'],
-        message: 'Booking date cannot be more than return date',
+    .refine((data) => data.clientPhone.toString().length === 10, {
+        path: ['clientPhone'],
+        message: 'Client phone number should be 10 digits',
+    })
+    .refine((data) => data.clientAltPhone.toString().length === 10, {
+        path: ['clientAltPhone'],
+        message: 'Client alt phone number should be 10 digits',
     });
 
 export const updateBookingSchema = z.object({
     id: z.number({ required_error: 'Booking id is required' }),
+    clientId: z.number({ required_error: 'Client id is required' }),
     ..._baseBookingSchema,
 })
     .refine((data) => data.advancePayment <= data.estimatedCost, {
         path: ['advancePayment'],
         message: 'Advance payment cannot be more than estimated cost',
     })
-    .refine((data) => data.travelFrom <= data.travelTo, {
-        path: ['travelFrom'],
+    .refine((data) => data.travelDateFrom <= data.travelDateTo, {
+        path: ['travelDateFrom'],
         message: 'Travel from date cannot be more than travel to date',
     })
-    .refine((data) => data.bookingDate <= data.returnDate, {
-        path: ['bookingDate'],
-        message: 'Booking date cannot be more than return date',
+    .refine((data) => data.clientPhone.toString().length === 10, {
+        path: ['clientPhone'],
+        message: 'Client phone number should be 10 digits',
+    })
+    .refine((data) => data.clientAltPhone.toString().length === 10, {
+        path: ['clientAltPhone'],
+        message: 'Client alt phone number should be 10 digits',
     });
 
 export const getBookingsInIntervalSchema = z.object({

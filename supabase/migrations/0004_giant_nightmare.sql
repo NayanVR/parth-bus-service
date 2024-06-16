@@ -1,0 +1,1 @@
+ALTER TABLE "driver_duty_vouchers" ADD COLUMN "id" uuid NOT NULL;
