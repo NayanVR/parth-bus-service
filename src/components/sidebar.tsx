@@ -98,8 +98,9 @@ export default function SideBar({}: Props) {
           variant="outline"
           onClick={(_) => logout.mutate()}
         >
-          <LogOutIcon size={20} />
-          <span className={`${isOpen ? "md:block" : "md:hidden"}`}>Logout</span>
+          {/* <LogOutIcon size={20} />
+          <span className={`${isOpen ? "md:block" : "md:hidden"}`}>Logout</span> */}
+          Logout
         </Button>
       </nav>
       <button
