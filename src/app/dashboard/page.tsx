@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useMemo, useState } from "react";
+import React, { useState } from "react";
 import { BookingsDataTable } from "./_components/bookings-table";
 import { columns } from "./_components/bookings-table-columns";
 import { trpc } from "@/trpc/react";
@@ -21,10 +21,6 @@ export default function Dashboard(props: Props) {
     from,
     to,
   });
-
-  // const csvData = useMemo(() => {
-  //   return res?.data.bookings;
-  // }, [res]);
 
   return (
     <>
@@ -61,7 +57,6 @@ export default function Dashboard(props: Props) {
             <BookingsDataTable columns={columns} data={res.data.bookings} />
           </BookingsDataRangeContext.Provider>
         )}
-        {/* <CSVLink data={csvData ?? []}>Export CSV</CSVLink> */}
       </div>
     </>
   );
