@@ -5,14 +5,9 @@ import { BookingsDataTable } from "./_components/bookings-table";
 import { columns } from "./_components/bookings-table-columns";
 import { trpc } from "@/trpc/react";
 import { DatePicker } from "@/components/ui/date-picker";
-import { CSVLink } from "react-csv";
+import { BookingsDataRangeContext } from "@/lib/contexts";
 
 type Props = {};
-
-export const BookingsDataRangeContext = createContext({
-  from: new Date(),
-  to: new Date(),
-});
 
 export default function Dashboard(props: Props) {
   const [from, setFrom] = useState<Date>(

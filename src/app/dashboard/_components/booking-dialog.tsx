@@ -24,8 +24,8 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { RouterOutputs, trpc } from "@/trpc/react";
 import { daysBetweenDates } from "@/lib/utils";
-import { BookingsDataRangeContext } from "../page";
 import { toast } from "sonner";
+import { BookingsDataRangeContext } from "@/lib/contexts";
 
 type Props = {
   isOpen: boolean;
