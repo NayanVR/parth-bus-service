@@ -3,14 +3,15 @@ import { TRPCError } from '@trpc/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { env } from '@/env';
-import * as argon2 from "argon2";
 import { TRPCContext } from '../trpc-context';
 import { usersTable } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
+import bcrypt from "bcrypt";
 
 export const registerHandler = async ({ ctx, input }: { ctx: TRPCContext, input: CreateUserInput }) => {
     try {
-        const hashedPassword = await argon2.hash(input.password);
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(input.password, saltRounds);
 
         const res = (await ctx.db.insert(usersTable).values({
             email: input.email,
@@ -47,7 +48,7 @@ export const loginHandler = async ({ ctx, input }: { ctx: TRPCContext, input: Lo
             });
         }
 
-        const validPassword = await argon2.verify(user.password, input.password);
+        const validPassword = await bcrypt.compare(input.password, user.password);
 
         if (!validPassword) {
             throw new TRPCError({
