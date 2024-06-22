@@ -58,6 +58,7 @@ export const getBookingsInIntervalHandler = async ({ ctx, input }: { ctx: TRPCCo
             select().
             from(bookingsTable)
             .where(and(
+                eq(bookingsTable.isDeleted, false),
                 gte(bookingsTable.bookingDate, input.from),
                 lte(bookingsTable.bookingDate, input.to)
             ))
@@ -124,8 +125,8 @@ export const updateBookingHandler = async ({ ctx, input }: { ctx: TRPCContext, i
 export const deleteBookingHandler = async ({ ctx, input: id }: { ctx: TRPCContext, input: number }) => {
     try {
         const res = await ctx.db.transaction(async (tx) => {
-            const booking = await tx.delete(bookingsTable).where(eq(bookingsTable.id, id)).returning();
-            await tx.delete(clientInfoTable).where(eq(clientInfoTable.id, booking.at(0)!.clientId));
+            const booking = await tx.update(bookingsTable).set({ isDeleted: true }).where(eq(bookingsTable.id, id)).returning();
+            await tx.update(driverDutyVouchersTable).set({ isDeleted: true }).where(eq(driverDutyVouchersTable.bookingId, id));
             return booking.at(0);
         });
         return {

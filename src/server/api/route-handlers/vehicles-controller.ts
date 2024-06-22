@@ -14,11 +14,10 @@ export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPC
             }).from(bookingsTable)
                 .where(
                     and(
+                        eq(bookingsTable.isDeleted, false),
                         eq(bookingsTable.vehicleId, input.vehicleId),
-                        and(
-                            gte(bookingsTable.travelDateFrom, input.from),
-                            lte(bookingsTable.travelDateTo, input.to)
-                        )
+                        gte(bookingsTable.travelDateFrom, input.from),
+                        lte(bookingsTable.travelDateTo, input.to)
                     )
                 );
 
@@ -28,11 +27,10 @@ export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPC
             }).from(maintenanceTable)
                 .where(
                     and(
+                        eq(maintenanceTable.isDeleted, false),
                         eq(maintenanceTable.vehicleId, input.vehicleId),
-                        and(
-                            gte(maintenanceTable.maintenanceDateFrom, input.from),
-                            lte(maintenanceTable.maintenanceDateTo, input.to)
-                        )
+                        gte(maintenanceTable.maintenanceDateFrom, input.from),
+                        lte(maintenanceTable.maintenanceDateTo, input.to)
                     )
                 );
 
@@ -57,7 +55,7 @@ export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPC
 
 export async function getAllVehiclesHandler({ ctx }: { ctx: TRPCContext }) {
     try {
-        const res = await ctx.db.select().from(vehiclesTable);
+        const res = await ctx.db.select().from(vehiclesTable).where(eq(vehiclesTable.isDeleted, false));
         return {
             status: 'success',
             data: {
@@ -108,7 +106,7 @@ export async function updateVehicleHandler({ ctx, input }: { ctx: TRPCContext, i
 
 export async function deleteVehicleHandler({ ctx, input: id }: { ctx: TRPCContext, input: number }) {
     try {
-        const res = await ctx.db.delete(vehiclesTable).where(eq(vehiclesTable.id, id)).returning();
+        const res = await ctx.db.update(vehiclesTable).set({ isDeleted: true }).where(eq(vehiclesTable.id, id)).returning();
         return {
             status: 'success',
             data: {

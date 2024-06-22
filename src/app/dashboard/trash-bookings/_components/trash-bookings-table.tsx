@@ -28,13 +28,12 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function BookingsDataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const table = useReactTable({
     data,
@@ -55,12 +54,12 @@ export function DataTable<TData, TValue>({
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
         <Input
-          placeholder="Search driver name..."
+          placeholder="Search client name..."
           value={
-            (table.getColumn("driverName")?.getFilterValue() as string) ?? ""
+            (table.getColumn("clientName")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table.getColumn("driverName")?.setFilterValue(event.target.value)
+            table.getColumn("clientName")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -87,21 +86,27 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const remainingPayment = row.getValue(
+                  "remainingPayment",
+                ) as number;
+                return (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className={`${remainingPayment <= 0 ? "bg-green-100 hover:bg-green-200" : ""}`}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell

@@ -32,13 +32,14 @@ export const getMaintenancesInIntervalHandler = async ({ ctx, input }: { ctx: TR
             .select()
             .from(maintenanceTable)
             .where(and(
+                eq(maintenanceTable.isDeleted, false),
                 gte(maintenanceTable.maintenanceDateFrom, input.from),
                 lte(maintenanceTable.maintenanceDateTo, input.to)
             ));
         return {
             status: 'success',
             data: {
-                maintenances: res,
+                maintenances: res.sort((a, b) => a.createdAt > b.createdAt ? 1 : -1),
             },
         };
     } catch (err: any) {
@@ -68,7 +69,7 @@ export const updateMaintenanceHandler = async ({ ctx, input }: { ctx: TRPCContex
 
 export const deleteMaintenanceHandler = async ({ ctx, input: id }: { ctx: TRPCContext, input: number }) => {
     try {
-        await ctx.db.delete(maintenanceTable).where(eq(maintenanceTable.id, id));
+        await ctx.db.update(maintenanceTable).set({ isDeleted: true }).where(eq(maintenanceTable.id, id));
         return {
             status: 'success',
         };

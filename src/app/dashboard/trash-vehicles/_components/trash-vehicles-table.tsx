@@ -55,12 +55,10 @@ export function DataTable<TData, TValue>({
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
         <Input
-          placeholder="Search driver name..."
-          value={
-            (table.getColumn("driverName")?.getFilterValue() as string) ?? ""
-          }
+          placeholder="Search type..."
+          value={(table.getColumn("type")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("driverName")?.setFilterValue(event.target.value)
+            table.getColumn("type")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />

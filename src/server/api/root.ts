@@ -6,6 +6,7 @@ import { bookingsRouter } from "./routers/bookings";
 import { driverRouter } from "./routers/driver-duty";
 import { vehiclesRouter } from "./routers/vehicles";
 import { maintenanceRouter } from "./routers/maintenance";
+import { trashRouter } from "./routers/trash";
 
 /**
  * This is the primary router for your server.
@@ -19,6 +20,7 @@ export const appRouter = createTRPCRouter({
   driverDuty: driverRouter,
   vehicles: vehiclesRouter,
   maintenance: maintenanceRouter,
+  trash: trashRouter,
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
     .query(({ input }) => {

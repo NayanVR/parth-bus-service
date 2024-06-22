@@ -6,7 +6,9 @@ import { and, eq, gte, lte, sql } from "drizzle-orm";
 
 export const getDriverDutyVoucherByIdHandler = async ({ ctx, input: id }: { ctx: TRPCContext, input: string }) => {
     try {
-        const res = (await ctx.db.select().from(driverDutyVouchersTable).where(eq(driverDutyVouchersTable.id, id)).innerJoin(clientInfoTable, eq(driverDutyVouchersTable.clientId, clientInfoTable.id))).at(0);
+        const res = (await ctx.db.select().from(driverDutyVouchersTable)
+            .where(and(eq(driverDutyVouchersTable.isDeleted, false), eq(driverDutyVouchersTable.id, id)))
+            .innerJoin(clientInfoTable, eq(driverDutyVouchersTable.clientId, clientInfoTable.id))).at(0);
 
         if (!res) {
             throw new TRPCError({
@@ -44,6 +46,7 @@ export const getDriverDutyVouchersInIntervalHandler = async ({ ctx, input }: { c
             .select()
             .from(driverDutyVouchersTable)
             .where(and(
+                eq(driverDutyVouchersTable.isDeleted, false),
                 gte(driverDutyVouchersTable.createdAt, input.from),
                 lte(driverDutyVouchersTable.createdAt, input.to)
             ))
@@ -116,11 +119,10 @@ export const updateDriverDutyVoucherHandler = async ({ ctx, input }: { ctx: TRPC
 export const deleteDriverDutyVoucherHandler = async ({ ctx, input: id }: { ctx: TRPCContext, input: string }) => {
     try {
         const res = await ctx.db.transaction(async (tx) => {
-            const driverDutyVoucher = await tx.delete(driverDutyVouchersTable).where(eq(driverDutyVouchersTable.id, id)).returning();
-            await tx.delete(clientInfoTable).where(eq(clientInfoTable.id, driverDutyVoucher.at(0)!.clientId));
-            await tx.delete(bookingsTable).where(eq(bookingsTable.clientId, driverDutyVoucher.at(0)!.clientId));
+            const driverDutyVoucher = await tx.update(driverDutyVouchersTable).set({ isDeleted: true }).where(eq(driverDutyVouchersTable.id, id)).returning();
+            await tx.update(bookingsTable).set({ isDeleted: true }).where(eq(bookingsTable.clientId, driverDutyVoucher.at(0)!.clientId));
             return driverDutyVoucher.at(0);
-        })
+        });
 
         return {
             status: 'success',

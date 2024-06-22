@@ -8,7 +8,7 @@ import { DataTable } from "./_components/maintenance-table";
 
 type Props = {};
 
-export default function DutyVouchers(props: Props) {
+export default function Maintenances(props: Props) {
   const [from, setFrom] = useState<Date>(
     new Date(new Date().getTime() - 70 * 24 * 60 * 60 * 1000),
   );
@@ -24,7 +24,7 @@ export default function DutyVouchers(props: Props) {
   return (
     <>
       <h2 className="flex h-20 items-center bg-primary pl-20 pr-8 font-bold text-primary-foreground">
-        Maintenance
+        Maintenances
       </h2>
       <div className="p-4">
         <div className="my-3 flex flex-col gap-4 md:flex-row md:items-center">

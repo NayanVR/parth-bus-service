@@ -1,4 +1,4 @@
-import { integer, pgEnum, pgTable, real, serial, text, timestamp, uuid, bigint } from 'drizzle-orm/pg-core';
+import { integer, pgEnum, pgTable, real, serial, text, timestamp, uuid, bigint, boolean } from 'drizzle-orm/pg-core';
 
 const xMetadata = {
   createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).defaultNow().notNull(),
@@ -32,6 +32,7 @@ export const bookingsTable = pgTable('bookings', {
   estimatedCost: real('estimated_cost').notNull().default(0),
   advancePayment: real('advance_payment').notNull().default(0),
   remainingPayment: real('remaining_payment').notNull().default(0),
+  isDeleted: boolean('is_deleted').default(false).notNull(),
 });
 
 export const driverDutyVouchersTable = pgTable('driver_duty_vouchers', {
@@ -46,6 +47,7 @@ export const driverDutyVouchersTable = pgTable('driver_duty_vouchers', {
   odometerEnd: real('odometer_end').notNull().default(0),
   paymentCollected: real('payment_collected').notNull().default(0),
   remarks: text('remarks'),
+  isDeleted: boolean('is_deleted').default(false).notNull(),
 });
 
 export const clientInfoTable = pgTable('client_info', {
@@ -63,12 +65,14 @@ export const maintenanceTable = pgTable('maintenance', {
   maintenanceDateFrom: timestamp('maintenance_date_from', { mode: 'date', withTimezone: true }).notNull(),
   maintenanceDateTo: timestamp('maintenance_date_to', { mode: 'date', withTimezone: true }).notNull(),
   odometerKm: real('odometer_km').notNull().default(0),
+  isDeleted: boolean('is_deleted').default(false).notNull(),
 });
 
 export const vehiclesTable = pgTable('vehicles', {
   ...metadata,
   plateNumber: text('plate_number').notNull().unique(),
   type: text('type').notNull(),
+  isDeleted: boolean('is_deleted').default(false).notNull(),
 });
 
 export type InsertUser = typeof usersTable.$inferInsert;
