@@ -170,7 +170,11 @@ export default function MaintenanceDialog({
             />
           </div>
           <DialogFooter>
-            <Button className="mt-8" type="submit">
+            <Button
+              disabled={formik.isSubmitting}
+              className="mt-8"
+              type="submit"
+            >
               {isEdit ? "Update" : "Create"}
             </Button>
           </DialogFooter>

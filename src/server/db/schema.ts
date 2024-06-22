@@ -31,6 +31,7 @@ export const bookingsTable = pgTable('bookings', {
   bookingDate: timestamp('booking_date', { mode: 'date', withTimezone: true }).defaultNow().notNull(),
   estimatedCost: real('estimated_cost').notNull().default(0),
   advancePayment: real('advance_payment').notNull().default(0),
+  remainingPayment: real('remaining_payment').notNull().default(0),
 });
 
 export const driverDutyVouchersTable = pgTable('driver_duty_vouchers', {

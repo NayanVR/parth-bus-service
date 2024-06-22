@@ -20,7 +20,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import MaintenanceDialog from "./maintenance-dialog";
 import { trpc } from "@/trpc/react";
@@ -73,6 +72,7 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-sm"
         /> */}
+        <div></div>
         <Button onClick={(_) => setIsOpen(true)}>Add Maintenance</Button>
         <MaintenanceDialog
           isOpen={isOpen}

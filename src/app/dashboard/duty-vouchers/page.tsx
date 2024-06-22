@@ -22,7 +22,7 @@ export default function DutyVouchers(props: Props) {
 
   return (
     <>
-      <h2 className="flex h-20 items-center bg-primary px-8 font-bold text-primary-foreground">
+      <h2 className="flex h-20 items-center bg-primary pl-20 pr-8 font-bold text-primary-foreground">
         Driver Duty Vouchers
       </h2>
       <div className="p-4">

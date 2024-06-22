@@ -6,12 +6,12 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getAuthUser();
+  const user = await getAuthUser({ shouldRedirect: true });
 
   return (
-    <main className="min-h-screen w-full md:grid md:grid-cols-5">
+    <main className="min-h-screen w-full">
       <SideBar />
-      <div className="md:col-span-4">{children}</div>
+      <div className="w-full">{children}</div>
     </main>
   );
 }

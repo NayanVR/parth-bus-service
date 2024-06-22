@@ -50,8 +50,8 @@ function DutyForm({ data }: Props) {
       const res = updateDriverDutyVoucher
         .mutateAsync(values)
         .then((data) => {
-          // formik.resetForm();
-          console.log(data);
+          formik.resetForm();
+          window.location.reload();
         })
         .catch((err) => {
           console.log(err);
@@ -206,7 +206,14 @@ function DutyForm({ data }: Props) {
               className="mt-2 inline-block text-sm"
               htmlFor="paymentCollected"
             >
-              Payment Collected
+              Payment{" "}
+              {data.remainingPayment <= 0 ? (
+                <span className="text-green-500">Completed</span>
+              ) : (
+                <span className="text-red-500">
+                  Pending: {data.remainingPayment}
+                </span>
+              )}
             </label>
             <Input
               id="paymentCollected"
@@ -216,6 +223,7 @@ function DutyForm({ data }: Props) {
               onChange={formik.handleChange}
               error={formik.errors.paymentCollected}
             />
+            <p></p>
             <label className="mt-2 inline-block text-sm" htmlFor="remarks">
               Remarks
             </label>
@@ -228,7 +236,11 @@ function DutyForm({ data }: Props) {
             />
           </div>
         </div>
-        <Button className="mt-8 self-end" type="submit">
+        <Button
+          disabled={formik.isSubmitting}
+          className="mt-8 self-end"
+          type="submit"
+        >
           Submit
         </Button>
       </form>

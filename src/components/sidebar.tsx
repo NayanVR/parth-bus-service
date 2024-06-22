@@ -57,24 +57,18 @@ export default function SideBar({}: Props) {
         className={`${isOpen ? "left-0" : "-left-full md:w-20 md:min-w-20"} absolute z-50 flex min-h-screen w-72 min-w-72 flex-col justify-between border-r bg-background transition-all md:relative md:left-0`}
       > */}
       <nav
-        className={`${isOpen ? "left-0" : "-left-full"} absolute z-50 flex min-h-screen flex-col justify-between border-r bg-background transition-all md:relative md:left-0`}
+        className={`${isOpen ? "left-0" : "-left-full"} fixed z-50 flex h-screen w-72 flex-col justify-between border-r bg-background transition-all duration-500 ease-in-out`}
       >
         <ul>
           <div className="flex h-20 items-center justify-between gap-4 bg-primary p-7 text-primary-foreground">
             <h4 className={`font-bold`}>Parth Bus Service</h4>
-            {/* <h4 className={`font-bold ${isOpen ? "md:block" : "md:hidden"}`}>
-              Parth Bus Service
-            </h4>
-            <button
-              onClick={(_) => setIsOpen((prev) => !prev)}
-              className="hidden rounded-md md:block"
-            >
+            <button onClick={(_) => setIsOpen((prev) => !prev)}>
               {isOpen ? (
                 <PanelLeftCloseIcon size={24} />
               ) : (
                 <PanelLeftOpenIcon size={24} />
               )}
-            </button> */}
+            </button>
           </div>
           {pages.map((page) => (
             <li key={page.name}>
@@ -85,6 +79,7 @@ export default function SideBar({}: Props) {
               <Link
                 href={page.href}
                 className={`m-2 flex items-center gap-2 rounded-md p-4 transition-colors ${pathname === page.href ? "bg-primary text-primary-foreground" : "hover:text-primary"}`}
+                onClick={(_) => setIsOpen(false)}
               >
                 <page.icon size={22} />
                 {/* <span className={`${isOpen ? "md:block" : "md:hidden"}`}> */}
@@ -105,12 +100,9 @@ export default function SideBar({}: Props) {
       </nav>
       <button
         onClick={(_) => setIsOpen((prev) => !prev)}
-        className="fixed bottom-2 right-2 z-50 block rounded-md border bg-background p-4 md:hidden"
+        className="absolute left-3 top-3 z-10 block p-4 text-primary-foreground"
       >
-        <MenuIcon
-          size={24}
-          className={`${isOpen ? "rotate-90" : "rotate-0"} transition-all`}
-        />
+        <PanelLeftOpenIcon size={24} />
       </button>
     </>
   );

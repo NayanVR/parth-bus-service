@@ -2,7 +2,7 @@ import { GetDriverDutyVouchersInIntervalInput, UpdateDriverDutyVoucherInput } fr
 import { TRPCContext } from "../trpc-context";
 import { bookingsTable, clientInfoTable, driverDutyVouchersTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 
 export const getDriverDutyVoucherByIdHandler = async ({ ctx, input: id }: { ctx: TRPCContext, input: string }) => {
     try {
@@ -22,10 +22,12 @@ export const getDriverDutyVoucherByIdHandler = async ({ ctx, input: id }: { ctx:
             });
         }
 
+        const remainingPayment = (await ctx.db.select().from(bookingsTable).where(eq(bookingsTable.clientId, res.client_info.id))).at(0)!.remainingPayment;
+
         return {
             status: 'success',
             data: {
-                driverDutyVoucher: { ...res.driver_duty_vouchers, ...res.client_info, id: res.driver_duty_vouchers.id },
+                driverDutyVoucher: { ...res.driver_duty_vouchers, ...res.client_info, id: res.driver_duty_vouchers.id, remainingPayment },
             },
         };
     } catch (err: any) {
@@ -49,7 +51,7 @@ export const getDriverDutyVouchersInIntervalHandler = async ({ ctx, input }: { c
         return {
             status: 'success',
             data: {
-                driverDutyVouchers: res.map(x => ({ ...x.driver_duty_vouchers, ...x.client_info, id: x.driver_duty_vouchers.id }))
+                driverDutyVouchers: res.map(x => ({ ...x.driver_duty_vouchers, ...x.client_info, id: x.driver_duty_vouchers.id })).sort((a, b) => a.createdAt > b.createdAt ? 1 : -1),
             },
         };
     } catch (err: any) {
@@ -80,6 +82,11 @@ export const updateDriverDutyVoucherHandler = async ({ ctx, input }: { ctx: TRPC
                 paymentCollected: input.paymentCollected,
                 remarks: input.remarks,
             }).where(eq(driverDutyVouchersTable.id, input.id)).returning();
+
+            await tx.update(bookingsTable).set({
+                vehicleId: input.vehicleId,
+                remainingPayment: sql`${bookingsTable.remainingPayment} - ${input.paymentCollected}`
+            }).where(eq(bookingsTable.clientId, input.clientId));
 
             return { ...driverDutyVoucher.at(0)!, ...clientInfo.at(0)!, id: driverDutyVoucher.at(0)!.id };
         });

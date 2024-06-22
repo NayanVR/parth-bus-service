@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from "react";
+import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -64,12 +64,13 @@ export default function BookingDialog({
       vehicleId: data?.vehicleId ?? 0,
       travelPlaceFrom: data?.travelPlaceFrom ?? "",
       travelPlaceTo: data?.travelPlaceTo ?? "",
-      travelDateFrom: data?.travelDateFrom ?? new Date(),
-      travelDateTo: data?.travelDateTo ?? new Date(),
+      travelDateFrom: data?.travelDateFrom ?? undefined!,
+      travelDateTo: data?.travelDateTo ?? undefined!,
       noOfPassengers: data?.noOfPassengers!,
       bookingDate: data?.bookingDate ?? new Date(),
       estimatedCost: data?.estimatedCost!,
       advancePayment: data?.advancePayment!,
+      remainingPayment: data?.remainingPayment!,
     } satisfies BookingsSchemaInput,
     validate: toFormikValidate(bookingsSchema),
     onSubmit: async (values) => {
@@ -107,7 +108,7 @@ export default function BookingDialog({
       vehicleId: formik.values.vehicleId,
       from,
       to,
-    }).data?.data.occupiedDates ?? [];
+    }) ?? [];
 
   const noOfTravelDays = useMemo(() => {
     if (formik.values.travelDateFrom && formik.values.travelDateTo) {
@@ -119,21 +120,43 @@ export default function BookingDialog({
     return 0;
   }, [formik.values.travelDateFrom, formik.values.travelDateTo]);
 
-  const remainingPayment = useMemo(() => {
-    return formik.values.estimatedCost - formik.values.advancePayment;
+  useEffect(() => {
+    formik.setFieldValue(
+      "remainingPayment",
+      formik.values.estimatedCost - formik.values.advancePayment,
+    );
   }, [formik.values.estimatedCost, formik.values.advancePayment]);
 
-  function checkOccupancy(date: Date) {
-    if (date < new Date()) return true;
-    const dateFoundInRange = occupiedDates.find(
-      (occupiedDate) => date >= occupiedDate.from && date <= occupiedDate.to,
-    );
-    if (dateFoundInRange) return true;
-    return false;
-  }
+  // true if date is occupied
+  const checkOccupancy = useCallback(
+    (date: Date) => {
+      const dateTime = date.getTime();
+      if (
+        data &&
+        (dateTime == data.travelDateFrom.getTime() ||
+          dateTime == data.travelDateTo.getTime())
+      )
+        return false;
+      if (date < from || date > to) return true;
+      const dateFoundInRange = occupiedDates.data?.data.occupiedDates.find(
+        (occupiedDate) =>
+          dateTime >= occupiedDate.from.getTime() &&
+          dateTime <= occupiedDate.to.getTime(),
+      );
+      if (dateFoundInRange) return true;
+      return false;
+    },
+    [data, occupiedDates],
+  );
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(newVal) => {
+        setIsOpen(newVal);
+        formik.resetForm();
+      }}
+    >
       <DialogContent className="max-h-screen overflow-scroll py-8 md:max-w-[80%]">
         <DialogHeader>
           <DialogTitle>
@@ -262,7 +285,7 @@ export default function BookingDialog({
                 date={formik.values.travelDateFrom}
                 setDate={(date) => formik.setFieldValue("travelDateFrom", date)}
                 className="w-full"
-                disabled={checkOccupancy}
+                disabled={checkOccupancy || occupiedDates.isLoading}
               />
               {formik.errors.travelDateFrom && (
                 <p className="text-sm text-destructive">
@@ -367,16 +390,21 @@ export default function BookingDialog({
                 Remaining Payment
               </label>
               <Input
-                readOnly
                 id="remainingPayment"
                 placeholder="Remaining Payment"
                 type="number"
-                value={remainingPayment}
+                value={formik.values.remainingPayment}
+                onChange={formik.handleChange}
+                error={formik.errors.remainingPayment}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button className="mt-8" type="submit">
+            <Button
+              disabled={formik.isSubmitting}
+              className="mt-8"
+              type="submit"
+            >
               {isEdit ? "Update" : "Create"}
             </Button>
           </DialogFooter>

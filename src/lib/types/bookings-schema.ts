@@ -18,6 +18,7 @@ const _baseBookingSchema = {
     bookingDate: z.date({ required_error: 'Booking date is required' }),
     estimatedCost: z.number({ required_error: 'Estimated cost is required' }),
     advancePayment: z.number({ required_error: 'Advance payment is required' }),
+    remainingPayment: z.number({ required_error: 'Remaining payment is required' }),
 };
 
 export const bookingsSchema = z.object(_baseBookingSchema)

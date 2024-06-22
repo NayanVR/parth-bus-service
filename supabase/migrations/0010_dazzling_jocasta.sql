@@ -1,0 +1,1 @@
+ALTER TABLE "bookings" ADD COLUMN "remaining_payment" real DEFAULT 0 NOT NULL;

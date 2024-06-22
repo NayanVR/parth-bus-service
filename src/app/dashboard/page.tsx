@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { BookingsDataTable } from "./_components/bookings-table";
 import { columns } from "./_components/bookings-table-columns";
 import { trpc } from "@/trpc/react";
@@ -24,7 +24,7 @@ export default function Dashboard(props: Props) {
 
   return (
     <>
-      <h2 className="flex h-20 items-center bg-primary px-8 font-bold text-primary-foreground">
+      <h2 className="flex h-20 items-center bg-primary pl-20 pr-8 font-bold text-primary-foreground">
         Dashboard
       </h2>
       <div className="p-4">
@@ -58,6 +58,7 @@ export default function Dashboard(props: Props) {
           </BookingsDataRangeContext.Provider>
         )}
       </div>
+      <div className="h-screen w-screen"></div>
     </>
   );
 }

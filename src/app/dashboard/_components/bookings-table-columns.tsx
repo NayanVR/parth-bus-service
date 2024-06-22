@@ -128,7 +128,6 @@ export const columns: ColumnDef<
   {
     header: "Remaining Payment",
     accessorKey: "remainingPayment",
-    cell: ({ row }) => row.original.estimatedCost - row.original.advancePayment,
   },
   {
     id: "actions",

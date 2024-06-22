@@ -25,6 +25,7 @@ export const createVehicleBookingHandler = async ({ ctx, input }: { ctx: TRPCCon
                 bookingDate: input.bookingDate,
                 estimatedCost: input.estimatedCost,
                 advancePayment: input.advancePayment,
+                remainingPayment: input.remainingPayment,
             }).returning();
 
             await tx.insert(driverDutyVouchersTable).values({
@@ -65,7 +66,7 @@ export const getBookingsInIntervalHandler = async ({ ctx, input }: { ctx: TRPCCo
         return {
             status: 'success',
             data: {
-                bookings: res.map(x => ({ ...x.bookings, ...x.client_info, id: x.bookings.id, voucherId: x.driver_duty_vouchers.id })),
+                bookings: res.map(x => ({ ...x.bookings, ...x.client_info, id: x.bookings.id, voucherId: x.driver_duty_vouchers.id })).sort((a, b) => a.bookingDate > b.bookingDate ? 1 : -1),
             },
         };
     }
@@ -97,6 +98,7 @@ export const updateBookingHandler = async ({ ctx, input }: { ctx: TRPCContext, i
                 bookingDate: input.bookingDate,
                 estimatedCost: input.estimatedCost,
                 advancePayment: input.advancePayment,
+                remainingPayment: input.remainingPayment,
             }).where(eq(bookingsTable.id, input.id)).returning();
 
             await tx.update(driverDutyVouchersTable).set({
