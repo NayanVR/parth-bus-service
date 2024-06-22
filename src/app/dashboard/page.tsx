@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { BookingsDataTable } from "./_components/bookings-table";
 import { columns } from "./_components/bookings-table-columns";
 import { trpc } from "@/trpc/react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { BookingsDataRangeContext } from "@/lib/contexts";
+import { CSVLink } from "react-csv";
+import { formatIndianDateFromDate } from "@/lib/utils";
 
 type Props = {};
 
@@ -22,12 +24,35 @@ export default function Dashboard(props: Props) {
     to,
   });
 
+  const vehicles = trpc.vehicles.getAllVehicles.useQuery().data?.data.vehicles;
+
+  const csvData = useMemo(() => {
+    return res?.data.bookings.map((booking) => ({
+      ID: booking.id,
+      "Client Name": booking.clientName,
+      "Client Phone": booking.clientPhone,
+      "Client Alt Phone": booking.clientAltPhone,
+      "Client Address": booking.clientAddress,
+      "Vehicle ID":
+        vehicles?.find((vehicle) => vehicle.id === booking.vehicleId) || "N/A",
+      "Travel Place From": booking.travelPlaceFrom,
+      "Travel Place To": booking.travelPlaceTo,
+      "Travel Date From": formatIndianDateFromDate(booking.travelDateFrom),
+      "Travel Date To": formatIndianDateFromDate(booking.travelDateTo),
+      "No of Passengers": booking.noOfPassengers,
+      "Booking Date": formatIndianDateFromDate(booking.bookingDate),
+      "Estimated Cost": booking.estimatedCost,
+      "Advance Payment": booking.advancePayment,
+      "Remaining Payment": booking.remainingPayment,
+    }));
+  }, [res?.data.bookings]);
+
   return (
     <>
       <h2 className="flex h-20 items-center bg-primary pl-20 pr-8 font-bold text-primary-foreground">
         Dashboard
       </h2>
-      <div className="p-4">
+      <div className="p-4 pb-8">
         <div className="my-3 flex flex-col gap-4 md:flex-row md:items-center">
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -57,8 +82,15 @@ export default function Dashboard(props: Props) {
             <BookingsDataTable columns={columns} data={res.data.bookings} />
           </BookingsDataRangeContext.Provider>
         )}
+        {csvData && csvData.length > 0 && (
+          <CSVLink
+            className="rounded-md bg-primary px-6 py-3 font-normal text-primary-foreground"
+            data={csvData}
+          >
+            Download CSV
+          </CSVLink>
+        )}
       </div>
-      <div className="h-screen w-screen"></div>
     </>
   );
 }
