@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { columns } from "./_components/voucher-table-columns";
 import { trpc } from "@/trpc/react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DataTable } from "./_components/voucher-table";
+import { CSVLink } from "react-csv";
 
 type Props = {};
 
@@ -19,6 +20,26 @@ export default function DutyVouchers(props: Props) {
   const { data: res } = trpc.driverDuty.getDriverDutyVoucherInInterval.useQuery(
     { from, to },
   );
+
+  const vehicles = trpc.vehicles.getAllVehicles.useQuery().data?.data.vehicles;
+
+  const csvData = useMemo(() => {
+    return res?.data.driverDutyVouchers.map((voucher) => ({
+      ID: voucher.bookingId,
+      "Client Name": voucher.clientName,
+      "Client Phone": voucher.clientPhone,
+      "Client Alt Phone": voucher.clientAltPhone,
+      "Client Address": voucher.clientAddress,
+      "Driver Name": voucher.driverName,
+      Vehicle:
+        vehicles?.find((vehicle) => vehicle.id === voucher.vehicleId) || "N/A",
+      "Driver Expense": voucher.driverExpense,
+      "Odometer Start": voucher.odometerStart,
+      "Odometer End": voucher.odometerEnd,
+      "Payment Collected": voucher.paymentCollected,
+      Remarks: voucher.remarks,
+    }));
+  }, [res?.data.driverDutyVouchers]);
 
   return (
     <>
@@ -52,6 +73,14 @@ export default function DutyVouchers(props: Props) {
         </div>
         {res?.data.driverDutyVouchers && (
           <DataTable columns={columns} data={res.data.driverDutyVouchers} />
+        )}
+        {csvData && csvData.length > 0 && (
+          <CSVLink
+            className="rounded-md bg-primary px-6 py-3 font-normal text-primary-foreground"
+            data={csvData}
+          >
+            Download CSV
+          </CSVLink>
         )}
       </div>
     </>

@@ -33,7 +33,7 @@ export default function Dashboard(props: Props) {
       "Client Phone": booking.clientPhone,
       "Client Alt Phone": booking.clientAltPhone,
       "Client Address": booking.clientAddress,
-      "Vehicle ID":
+      Vehicle:
         vehicles?.find((vehicle) => vehicle.id === booking.vehicleId) || "N/A",
       "Travel Place From": booking.travelPlaceFrom,
       "Travel Place To": booking.travelPlaceTo,

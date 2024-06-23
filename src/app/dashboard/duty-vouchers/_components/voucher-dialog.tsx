@@ -87,7 +87,7 @@ export default function VoucherDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-h-screen overflow-scroll py-8 md:max-w-[80%]">
+      <DialogContent className="max-h-[calc(100vh-5rem)] overflow-scroll py-8 md:max-h-screen md:max-w-[80%]">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? "Edit voucher" : "Create voucher"}
