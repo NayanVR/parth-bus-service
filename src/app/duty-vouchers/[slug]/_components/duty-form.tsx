@@ -47,6 +47,10 @@ function DutyForm({ data }: Props) {
     },
     validate: toFormikValidate(updateDriverDutyVoucherSchema),
     onSubmit: async (values) => {
+      if (values.paymentCollected > data.remainingPayment) {
+        toast.error("Payment collected cannot be more than remaining");
+        return;
+      }
       const res = updateDriverDutyVoucher
         .mutateAsync(values)
         .then((data) => {

@@ -22,6 +22,7 @@ import {
   DriverDutyVoucherInput,
   driverDutyVoucherSchema,
 } from "@/lib/types/driver-duty-schema";
+import { toast } from "sonner";
 
 type Props = {
   isOpen: boolean;
@@ -68,6 +69,10 @@ export default function VoucherDialog({
     } satisfies DriverDutyVoucherInput,
     validate: toFormikValidate(driverDutyVoucherSchema),
     onSubmit: async (values) => {
+      if (values.paymentCollected > data?.remainingPayment!) {
+        toast.error("Payment collected cannot be more than remaining");
+        return;
+      }
       // if (isEdit) {
       const res = await updateDriverDutyVoucher.mutateAsync({
         id: data?.id!,

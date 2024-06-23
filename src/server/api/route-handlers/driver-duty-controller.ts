@@ -50,11 +50,12 @@ export const getDriverDutyVouchersInIntervalHandler = async ({ ctx, input }: { c
                 gte(driverDutyVouchersTable.createdAt, input.from),
                 lte(driverDutyVouchersTable.createdAt, input.to)
             ))
-            .innerJoin(clientInfoTable, eq(driverDutyVouchersTable.clientId, clientInfoTable.id));
+            .innerJoin(clientInfoTable, eq(driverDutyVouchersTable.clientId, clientInfoTable.id))
+            .innerJoin(bookingsTable, eq(driverDutyVouchersTable.clientId, bookingsTable.clientId));
         return {
             status: 'success',
             data: {
-                driverDutyVouchers: res.map(x => ({ ...x.driver_duty_vouchers, ...x.client_info, id: x.driver_duty_vouchers.id })).sort((a, b) => a.createdAt > b.createdAt ? 1 : -1),
+                driverDutyVouchers: res.map(x => ({ ...x.driver_duty_vouchers, ...x.client_info, ...x.bookings, id: x.driver_duty_vouchers.id })).sort((a, b) => a.createdAt > b.createdAt ? 1 : -1),
             },
         };
     } catch (err: any) {

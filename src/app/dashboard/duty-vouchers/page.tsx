@@ -46,7 +46,7 @@ export default function DutyVouchers(props: Props) {
       <h2 className="flex h-20 items-center bg-primary pl-20 pr-8 font-bold text-primary-foreground">
         Driver Duty Vouchers
       </h2>
-      <div className="p-4">
+      <div className="p-4 pb-8">
         <div className="my-3 flex flex-col gap-4 md:flex-row md:items-center">
           <div>
             <label className="block text-sm font-medium text-gray-700">
