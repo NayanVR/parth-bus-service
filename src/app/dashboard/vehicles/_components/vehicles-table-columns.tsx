@@ -89,9 +89,7 @@ export const columns: ColumnDef<
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will delete all bookings and driver vouchers associated
-                  with this vehicle. This action cannot be undone. This will
-                  permanently data from servers.
+                  Move this record to trash.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
