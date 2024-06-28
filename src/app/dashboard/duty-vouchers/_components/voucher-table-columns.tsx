@@ -23,7 +23,7 @@ export const columns: ColumnDef<
   RouterOutputs["driverDuty"]["getDriverDutyVoucherInInterval"]["data"]["driverDutyVouchers"][0]
 >[] = [
   {
-    header: "URL",
+    header: "ID",
     accessorKey: "id",
     cell: ({ row }) => {
       return (
@@ -36,7 +36,7 @@ export const columns: ColumnDef<
             toast.success("Copied to clipboard");
           }}
         >
-          copy
+          {row.original.bookingId}
         </button>
       );
     },

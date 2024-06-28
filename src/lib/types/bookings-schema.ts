@@ -6,7 +6,7 @@ const _baseBookingSchema = {
     clientAddress: z.string({ required_error: 'Client address is required' })
         .min(1, 'Client address is required'),
     clientPhone: z.number({ required_error: 'Client phone is required' }),
-    clientAltPhone: z.number({ required_error: 'Client alt phone is required' }),
+    clientAltPhone: z.number().nullable(),
     vehicleId: z.number({ required_error: 'Vehicle is required' }).gt(0, 'Vehicle is required'),
     travelPlaceFrom: z.string({ required_error: 'Travel place is required' })
         .min(1, 'Travel place is required'),
@@ -16,6 +16,8 @@ const _baseBookingSchema = {
     travelDateTo: z.date({ required_error: 'Travel to is required' }),
     noOfPassengers: z.number({ required_error: 'Number of passengers is required' }).gte(0, 'Number of passengers is required'),
     bookingDate: z.date({ required_error: 'Booking date is required' }),
+    estimatedKMs: z.number().nullable(),
+    costPerKm: z.number().nullable(),
     estimatedCost: z.number({ required_error: 'Estimated cost is required' }),
     advancePayment: z.number({ required_error: 'Advance payment is required' }),
     remainingPayment: z.number({ required_error: 'Remaining payment is required' }),
@@ -34,7 +36,7 @@ export const bookingsSchema = z.object(_baseBookingSchema)
         path: ['clientPhone'],
         message: 'Client phone number should be 10 digits',
     })
-    .refine((data) => data.clientAltPhone.toString().length === 10, {
+    .refine((data) => data.clientAltPhone && data.clientAltPhone.toString().length === 10, {
         path: ['clientAltPhone'],
         message: 'Client alt phone number should be 10 digits',
     });
@@ -56,7 +58,7 @@ export const updateBookingSchema = z.object({
         path: ['clientPhone'],
         message: 'Client phone number should be 10 digits',
     })
-    .refine((data) => data.clientAltPhone.toString().length === 10, {
+    .refine((data) => data.clientAltPhone && data.clientAltPhone.toString().length === 10, {
         path: ['clientAltPhone'],
         message: 'Client alt phone number should be 10 digits',
     });

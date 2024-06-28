@@ -41,6 +41,8 @@ export default function Dashboard(props: Props) {
       "Travel Date To": formatIndianDateFromDate(booking.travelDateTo),
       "No of Passengers": booking.noOfPassengers,
       "Booking Date": formatIndianDateFromDate(booking.bookingDate),
+      "Estimated KMs": booking.estimatedKMs || "N/A",
+      "Cost Per KM": booking.costPerKm || "N/A",
       "Estimated Cost": booking.estimatedCost,
       "Advance Payment": booking.advancePayment,
       "Remaining Payment": booking.remainingPayment,

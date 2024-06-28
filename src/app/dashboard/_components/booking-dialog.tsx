@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useEffect, useMemo } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   Dialog,
   DialogContent,
@@ -34,6 +40,11 @@ type Props = {
   data?: RouterOutputs["bookings"]["getBookingsInInterval"]["data"]["bookings"][0];
 };
 
+const paymentMethods: { [key: string]: string } = {
+  estimatedCost: "Estimated Cost",
+  costPerKMs: "Cost Per KMs",
+};
+
 export default function BookingDialog({
   isOpen,
   setIsOpen,
@@ -43,6 +54,7 @@ export default function BookingDialog({
   const trpcUtils = trpc.useUtils();
   const { data: vehiclesData } = trpc.vehicles.getAllVehicles.useQuery();
   const { from, to } = useContext(BookingsDataRangeContext);
+  const [paymentType, setPaymentType] = useState(paymentMethods.estimatedCost);
 
   const createBooking = trpc.bookings.createVehicleBooking.useMutation({
     onSuccess: () => {
@@ -68,6 +80,8 @@ export default function BookingDialog({
       travelDateTo: data?.travelDateTo ?? undefined!,
       noOfPassengers: data?.noOfPassengers!,
       bookingDate: data?.bookingDate ?? new Date(),
+      estimatedKMs: data?.estimatedKMs ?? null,
+      costPerKm: data?.costPerKm ?? null,
       estimatedCost: data?.estimatedCost!,
       advancePayment: data?.advancePayment!,
       remainingPayment: data?.remainingPayment!,
@@ -81,6 +95,17 @@ export default function BookingDialog({
         toast.error("Vehicle is not available for the selected dates");
         return;
       }
+
+      if (paymentType === paymentMethods.costPerKMs) {
+        if (!values.estimatedKMs || !values.costPerKm) {
+          toast.error("Estimated KMs and Cost Per KMs are required");
+          return;
+        }
+      } else {
+        values.estimatedKMs = null;
+        values.costPerKm = null;
+      }
+
       if (isEdit) {
         if (data === undefined) {
           toast.error("Something went wrong");
@@ -126,6 +151,15 @@ export default function BookingDialog({
       formik.values.estimatedCost - formik.values.advancePayment,
     );
   }, [formik.values.estimatedCost, formik.values.advancePayment]);
+
+  useEffect(() => {
+    if (formik.values.estimatedKMs && formik.values.costPerKm) {
+      formik.setFieldValue(
+        "estimatedCost",
+        formik.values.estimatedKMs * formik.values.costPerKm,
+      );
+    }
+  }, [formik.values.estimatedKMs, formik.values.costPerKm]);
 
   // true if date is occupied
   const checkOccupancy = useCallback(
@@ -357,6 +391,65 @@ export default function BookingDialog({
               )}
               <label
                 className="mt-2 inline-block text-sm"
+                htmlFor="paymentType"
+              >
+                Payment Type
+              </label>
+              <Select
+                value={paymentType}
+                onValueChange={(value) => {
+                  setPaymentType(value);
+                  formik.setFieldValue("estimatedKMs", null);
+                  formik.setFieldValue("costPerKm", null);
+                  formik.setFieldValue("estimatedCost", 0);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Payment Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(paymentMethods).map((key) => (
+                    <SelectItem key={key} value={paymentMethods[key]!}>
+                      {paymentMethods[key]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {paymentType === paymentMethods.costPerKMs && (
+                <>
+                  <label
+                    className="mt-2 inline-block text-sm"
+                    htmlFor="estimatedKMs"
+                  >
+                    Estimated KMs
+                  </label>
+                  <Input
+                    id="estimatedKMs"
+                    placeholder="Estimated KMs"
+                    type="number"
+                    value={formik.values.estimatedKMs!}
+                    onChange={formik.handleChange}
+                    error={formik.errors.estimatedKMs}
+                  />
+
+                  <label
+                    className="mt-2 inline-block text-sm"
+                    htmlFor="costPerKm"
+                  >
+                    Cost Per KM
+                  </label>
+                  <Input
+                    id="costPerKm"
+                    placeholder="Cost Per KM"
+                    type="number"
+                    value={formik.values.costPerKm!}
+                    onChange={formik.handleChange}
+                    error={formik.errors.costPerKm}
+                  />
+                </>
+              )}
+              <label
+                className="mt-2 inline-block text-sm"
                 htmlFor="estimatedCost"
               >
                 Estimated Cost
@@ -364,6 +457,7 @@ export default function BookingDialog({
               <Input
                 id="estimatedCost"
                 placeholder="Estimated Cost"
+                readOnly={paymentType === paymentMethods.costPerKMs}
                 type="number"
                 value={formik.values.estimatedCost}
                 onChange={formik.handleChange}

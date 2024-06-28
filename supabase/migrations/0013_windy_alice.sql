@@ -1,0 +1,1 @@
+ALTER TABLE "bookings" ADD COLUMN "is_payment_collected" boolean DEFAULT false NOT NULL;

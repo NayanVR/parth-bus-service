@@ -29,9 +29,12 @@ export const bookingsTable = pgTable('bookings', {
   travelDateTo: timestamp('travel_date_to', { mode: 'date', withTimezone: true }).notNull(),
   noOfPassengers: integer('no_of_passengers').notNull().default(0),
   bookingDate: timestamp('booking_date', { mode: 'date', withTimezone: true }).defaultNow().notNull(),
+  estimatedKMs: integer('estimated_kms'),
+  costPerKm: real('cost_per_km'),
   estimatedCost: real('estimated_cost').notNull().default(0),
   advancePayment: real('advance_payment').notNull().default(0),
   remainingPayment: real('remaining_payment').notNull().default(0),
+  isPaymentCollected: boolean('is_payment_collected').default(false).notNull(),
   isDeleted: boolean('is_deleted').default(false).notNull(),
 });
 
@@ -46,6 +49,8 @@ export const driverDutyVouchersTable = pgTable('driver_duty_vouchers', {
   odometerStart: real('odometer_start').notNull().default(0),
   odometerEnd: real('odometer_end').notNull().default(0),
   paymentCollected: real('payment_collected').notNull().default(0),
+  tollTaxes: real('toll_taxes').notNull().default(0),
+  additionalExpenses: real('additional_expenses').notNull().default(0),
   remarks: text('remarks'),
   isDeleted: boolean('is_deleted').default(false).notNull(),
 });
@@ -65,6 +70,7 @@ export const maintenanceTable = pgTable('maintenance', {
   maintenanceDateFrom: timestamp('maintenance_date_from', { mode: 'date', withTimezone: true }).notNull(),
   maintenanceDateTo: timestamp('maintenance_date_to', { mode: 'date', withTimezone: true }).notNull(),
   odometerKm: real('odometer_km').notNull().default(0),
+  remarks: text('remarks'),
   isDeleted: boolean('is_deleted').default(false).notNull(),
 });
 

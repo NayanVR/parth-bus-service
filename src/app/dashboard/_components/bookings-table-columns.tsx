@@ -118,6 +118,16 @@ export const columns: ColumnDef<
     cell: ({ row }) => formatIndianDateFromDate(row.original.bookingDate),
   },
   {
+    header: "Estimated KMs",
+    accessorKey: "estimatedKMs",
+    cell: ({ row }) => row.original.estimatedKMs ?? "N/A",
+  },
+  {
+    header: "Cost Per KM",
+    accessorKey: "costPerKm",
+    cell: ({ row }) => row.original.costPerKm ?? "N/A",
+  },
+  {
     header: "Estimated Cost",
     accessorKey: "estimatedCost",
   },
