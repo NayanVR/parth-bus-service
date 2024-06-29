@@ -32,7 +32,7 @@ export const columns: ColumnDef<
       const vehicle = vehicles?.find(
         (vehicle) => vehicle.id === row.original.vehicleId,
       );
-      return vehicle?.plateNumber || "N/A";
+      return vehicle?.type || "N/A";
     },
   },
   {

@@ -22,8 +22,9 @@ type Props = {
 };
 
 export function DatePicker({ className, date, setDate, disabled }: Props) {
+  const [isOpen, setIsOpen] = React.useState(false);
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
@@ -41,7 +42,10 @@ export function DatePicker({ className, date, setDate, disabled }: Props) {
         <Calendar
           mode="single"
           selected={date}
-          onSelect={setDate}
+          onSelect={(day, selectedDay, modifiers, e) => {
+            setDate(day, selectedDay, modifiers, e);
+            setIsOpen(false);
+          }}
           initialFocus
           className={cn(className, "w-auto")}
           disabled={disabled}

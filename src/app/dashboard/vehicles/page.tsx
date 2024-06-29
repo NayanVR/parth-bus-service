@@ -5,11 +5,12 @@ import { DataTable } from "./_components/vehicles-table";
 import { trpc } from "@/trpc/react";
 import { useMemo } from "react";
 import { CSVLink } from "react-csv";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {};
 
 export default function Vehicles(props: Props) {
-  const { data: res } = trpc.vehicles.getAllVehicles.useQuery();
+  const { data: res, isLoading } = trpc.vehicles.getAllVehicles.useQuery();
 
   const csvData = useMemo(() => {
     return res?.data.vehicles.map((vehicle) => ({
@@ -25,6 +26,12 @@ export default function Vehicles(props: Props) {
         Vehicles
       </h2>
       <div className="p-4 pb-8">
+        {isLoading && (
+          <div className="flex w-full flex-col gap-4 py-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-72 w-full" />
+          </div>
+        )}
         {res?.data.vehicles && (
           <DataTable columns={columns} data={res.data.vehicles} />
         )}

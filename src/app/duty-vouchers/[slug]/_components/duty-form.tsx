@@ -9,9 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateDriverDutyVoucherSchema } from "@/lib/types/driver-duty-schema";
+import {
+  UpdateDriverDutyVoucherInput,
+  updateDriverDutyVoucherSchema,
+} from "@/lib/types/driver-duty-schema";
 import { RouterOutputs, trpc } from "@/trpc/react";
 import { useFormik } from "formik";
+import { useMemo } from "react";
 import { toast } from "sonner";
 import { toFormikValidate } from "zod-formik-adapter";
 
@@ -21,6 +25,7 @@ type Props = {
 
 function DutyForm({ data }: Props) {
   const trpcUtils = trpc.useUtils();
+  const isPaymentInKMs = !!data.costPerKm;
   const { data: vehiclesData } = trpc.vehicles.getAllVehicles.useQuery();
   const updateDriverDutyVoucher =
     trpc.driverDuty.updateDriverDutyVoucher.useMutation({
@@ -43,16 +48,30 @@ function DutyForm({ data }: Props) {
       odometerStart: data.odometerStart!,
       odometerEnd: data.odometerEnd!,
       paymentCollected: data.paymentCollected!,
+      tollTaxes: data.tollTaxes!,
+      additionalExpenses: data.additionalExpenses!,
       remarks: "",
     },
     validate: toFormikValidate(updateDriverDutyVoucherSchema),
     onSubmit: async (values) => {
-      if (values.paymentCollected > data.remainingPayment) {
+      if (values.paymentCollected > amountToCollect) {
         toast.error("Payment collected cannot be more than remaining");
         return;
       }
+      const inputData: UpdateDriverDutyVoucherInput = {
+        ...values,
+        estimatedKMs: isPaymentInKMs
+          ? values.odometerEnd! - values.odometerStart!
+          : data.estimatedKMs,
+        estimatedCost: isPaymentInKMs
+          ? (values.odometerEnd! - values.odometerStart!) * data.costPerKm!
+          : data.estimatedCost,
+        remainingPayment: isPaymentInKMs
+          ? amountToCollect - values.paymentCollected
+          : data.remainingPayment - values.paymentCollected,
+      };
       const res = updateDriverDutyVoucher
-        .mutateAsync(values)
+        .mutateAsync(inputData)
         .then((data) => {
           formik.resetForm();
           window.location.reload();
@@ -67,6 +86,17 @@ function DutyForm({ data }: Props) {
       });
     },
   });
+
+  const amountToCollect = useMemo(() => {
+    if (isPaymentInKMs && formik.values.odometerEnd) {
+      return (
+        (formik.values.odometerEnd! - formik.values.odometerStart!) *
+          data.costPerKm! -
+        data.advancePayment!
+      );
+    }
+    return data.remainingPayment;
+  }, [formik.values.odometerEnd, formik.values.odometerStart]);
 
   return (
     <>
@@ -211,11 +241,17 @@ function DutyForm({ data }: Props) {
               htmlFor="paymentCollected"
             >
               Payment{" "}
-              {data.remainingPayment <= 0 ? (
+              {amountToCollect <= 0 ? (
                 <span className="text-green-500">Completed</span>
               ) : (
                 <span className="text-red-500">
-                  Pending: {data.remainingPayment}
+                  Pending: <span className="font-bold">{amountToCollect}</span>{" "}
+                </span>
+              )}
+              {isPaymentInKMs && (
+                <span>
+                  {" | ("}Cost per KM: {data.costPerKm}
+                  {")"}
                 </span>
               )}
             </label>
@@ -227,7 +263,31 @@ function DutyForm({ data }: Props) {
               onChange={formik.handleChange}
               error={formik.errors.paymentCollected}
             />
-            <p></p>
+            <label className="mt-2 inline-block text-sm" htmlFor="tollTaxes">
+              Toll Taxes
+            </label>
+            <Input
+              id="tollTaxes"
+              placeholder="Toll Taxes"
+              type="number"
+              value={formik.values.tollTaxes}
+              onChange={formik.handleChange}
+              error={formik.errors.tollTaxes}
+            />
+            <label
+              className="mt-2 inline-block text-sm"
+              htmlFor="additionalExpenses"
+            >
+              Additional Expenses
+            </label>
+            <Input
+              id="additionalExpenses"
+              placeholder="Additional expenses"
+              type="number"
+              value={formik.values.additionalExpenses}
+              onChange={formik.handleChange}
+              error={formik.errors.additionalExpenses}
+            />
             <label className="mt-2 inline-block text-sm" htmlFor="remarks">
               Remarks
             </label>

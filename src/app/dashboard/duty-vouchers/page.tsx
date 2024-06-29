@@ -6,6 +6,7 @@ import { trpc } from "@/trpc/react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DataTable } from "./_components/voucher-table";
 import { CSVLink } from "react-csv";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {};
 
@@ -17,9 +18,8 @@ export default function DutyVouchers(props: Props) {
     new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
   );
 
-  const { data: res } = trpc.driverDuty.getDriverDutyVoucherInInterval.useQuery(
-    { from, to },
-  );
+  const { data: res, isLoading } =
+    trpc.driverDuty.getDriverDutyVoucherInInterval.useQuery({ from, to });
 
   const vehicles = trpc.vehicles.getAllVehicles.useQuery().data?.data.vehicles;
 
@@ -32,7 +32,8 @@ export default function DutyVouchers(props: Props) {
       "Client Address": voucher.clientAddress,
       "Driver Name": voucher.driverName,
       Vehicle:
-        vehicles?.find((vehicle) => vehicle.id === voucher.vehicleId) || "N/A",
+        vehicles?.find((vehicle) => vehicle.id === voucher.vehicleId)?.type ||
+        "N/A",
       "Driver Expense": voucher.driverExpense,
       "Odometer Start": voucher.odometerStart,
       "Odometer End": voucher.odometerEnd,
@@ -71,6 +72,12 @@ export default function DutyVouchers(props: Props) {
             />
           </div>
         </div>
+        {isLoading && (
+          <div className="flex w-full flex-col gap-4 py-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-72 w-full" />
+          </div>
+        )}
         {res?.data.driverDutyVouchers && (
           <DataTable columns={columns} data={res.data.driverDutyVouchers} />
         )}

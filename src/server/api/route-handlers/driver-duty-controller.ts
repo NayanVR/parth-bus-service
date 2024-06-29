@@ -2,7 +2,7 @@ import { GetDriverDutyVouchersInIntervalInput, UpdateDriverDutyVoucherInput } fr
 import { TRPCContext } from "../trpc-context";
 import { bookingsTable, clientInfoTable, driverDutyVouchersTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 
 export const getDriverDutyVoucherByIdHandler = async ({ ctx, input: id }: { ctx: TRPCContext, input: string }) => {
     try {
@@ -24,12 +24,18 @@ export const getDriverDutyVoucherByIdHandler = async ({ ctx, input: id }: { ctx:
             });
         }
 
-        const remainingPayment = (await ctx.db.select().from(bookingsTable).where(eq(bookingsTable.clientId, res.client_info.id))).at(0)!.remainingPayment;
+        const bookingInfo = (await ctx.db.select({
+            estimatedKMs: bookingsTable.estimatedKMs,
+            costPerKm: bookingsTable.costPerKm,
+            estimatedCost: bookingsTable.estimatedCost,
+            advancePayment: bookingsTable.advancePayment,
+            remainingPayment: bookingsTable.remainingPayment
+        }).from(bookingsTable).where(eq(bookingsTable.clientId, res.client_info.id))).at(0)!;
 
         return {
             status: 'success',
             data: {
-                driverDutyVoucher: { ...res.driver_duty_vouchers, ...res.client_info, id: res.driver_duty_vouchers.id, remainingPayment },
+                driverDutyVoucher: { ...res.driver_duty_vouchers, ...res.client_info, id: res.driver_duty_vouchers.id, ...bookingInfo },
             },
         };
     } catch (err: any) {
@@ -51,11 +57,12 @@ export const getDriverDutyVouchersInIntervalHandler = async ({ ctx, input }: { c
                 lte(driverDutyVouchersTable.createdAt, input.to)
             ))
             .innerJoin(clientInfoTable, eq(driverDutyVouchersTable.clientId, clientInfoTable.id))
-            .innerJoin(bookingsTable, eq(driverDutyVouchersTable.clientId, bookingsTable.clientId));
+            .innerJoin(bookingsTable, eq(driverDutyVouchersTable.clientId, bookingsTable.clientId))
+            .orderBy(desc(driverDutyVouchersTable.createdAt));
         return {
             status: 'success',
             data: {
-                driverDutyVouchers: res.map(x => ({ ...x.driver_duty_vouchers, ...x.client_info, ...x.bookings, id: x.driver_duty_vouchers.id })).sort((a, b) => a.createdAt > b.createdAt ? 1 : -1),
+                driverDutyVouchers: res.map(x => ({ ...x.driver_duty_vouchers, ...x.client_info, ...x.bookings, id: x.driver_duty_vouchers.id })),
             },
         };
     } catch (err: any) {
@@ -84,12 +91,16 @@ export const updateDriverDutyVoucherHandler = async ({ ctx, input }: { ctx: TRPC
                 odometerStart: input.odometerStart,
                 odometerEnd: input.odometerEnd,
                 paymentCollected: input.paymentCollected,
+                tollTaxes: input.tollTaxes,
+                additionalExpenses: input.additionalExpenses,
                 remarks: input.remarks,
             }).where(eq(driverDutyVouchersTable.id, input.id)).returning();
 
             await tx.update(bookingsTable).set({
                 vehicleId: input.vehicleId,
-                remainingPayment: sql`${bookingsTable.remainingPayment} - ${input.paymentCollected}`
+                remainingPayment: input.remainingPayment!,
+                estimatedKMs: input.estimatedKMs!,
+                estimatedCost: input.estimatedCost!,
             }).where(eq(bookingsTable.clientId, input.clientId));
 
             return { ...driverDutyVoucher.at(0)!, ...clientInfo.at(0)!, id: driverDutyVoucher.at(0)!.id };

@@ -7,6 +7,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { DataTable } from "./_components/maintenance-table";
 import { CSVLink } from "react-csv";
 import { formatIndianDateFromDate } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {};
 
@@ -18,10 +19,11 @@ export default function Maintenances(props: Props) {
     new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
   );
 
-  const { data: res } = trpc.maintenance.getMaintenancesInInterval.useQuery({
-    from,
-    to,
-  });
+  const { data: res, isLoading } =
+    trpc.maintenance.getMaintenancesInInterval.useQuery({
+      from,
+      to,
+    });
 
   const vehicles = trpc.vehicles.getAllVehicles.useQuery().data?.data.vehicles;
 
@@ -70,6 +72,12 @@ export default function Maintenances(props: Props) {
             />
           </div>
         </div>
+        {isLoading && (
+          <div className="flex w-full flex-col gap-4 py-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-72 w-full" />
+          </div>
+        )}
         {res?.data.maintenances && (
           <DataTable columns={columns} data={res.data.maintenances} />
         )}

@@ -80,7 +80,7 @@ export const columns: ColumnDef<
       const vehicle = vehicles?.find(
         (vehicle) => vehicle.id === row.original.vehicleId,
       );
-      return vehicle?.plateNumber ?? "N/A";
+      return vehicle?.type ?? "N/A";
     },
   },
   {
@@ -96,8 +96,21 @@ export const columns: ColumnDef<
     accessorKey: "odometerEnd",
   },
   {
+    header: "KMs Travelled",
+    accessorKey: "kmsTravelled",
+    cell: ({ row }) => row.original.odometerEnd - row.original.odometerStart,
+  },
+  {
     header: "Payment Collected",
     accessorKey: "paymentCollected",
+  },
+  {
+    header: "Toll Taxes",
+    accessorKey: "tollTaxes",
+  },
+  {
+    header: "Additional Expenses",
+    accessorKey: "additionalExpenses",
   },
   {
     header: "Remarks",

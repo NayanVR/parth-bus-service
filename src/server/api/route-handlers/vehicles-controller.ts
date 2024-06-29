@@ -2,7 +2,7 @@ import { bookingsTable, maintenanceTable, vehiclesTable } from "@/server/db/sche
 import { TRPCContext } from "../trpc-context";
 import { TRPCError } from "@trpc/server";
 import { CreateVehicleInput, UpdateVehicleInput, VehicleOccupiedDatesInput } from "@/lib/types/vehicle-schema";
-import { eq, and, gte, lte } from "drizzle-orm";
+import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { optimizeDateRanges } from "@/lib/utils";
 
 export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPCContext, input: VehicleOccupiedDatesInput }) {
@@ -55,7 +55,7 @@ export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPC
 
 export async function getAllVehiclesHandler({ ctx }: { ctx: TRPCContext }) {
     try {
-        const res = await ctx.db.select().from(vehiclesTable).where(eq(vehiclesTable.isDeleted, false));
+        const res = await ctx.db.select().from(vehiclesTable).where(eq(vehiclesTable.isDeleted, false)).orderBy(desc(vehiclesTable.createdAt));
         return {
             status: 'success',
             data: {

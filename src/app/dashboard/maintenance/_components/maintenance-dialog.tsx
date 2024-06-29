@@ -57,6 +57,7 @@ export default function MaintenanceDialog({
       maintenanceDateFrom: data?.maintenanceDateFrom ?? new Date(),
       maintenanceDateTo: data?.maintenanceDateTo ?? new Date(),
       odometerKm: data?.odometerKm!,
+      remarks: data?.remarks ?? "",
     } satisfies MaintenanceInput,
     validate: toFormikValidate(maintenanceSchema),
     onSubmit: async (values) => {
@@ -79,7 +80,7 @@ export default function MaintenanceDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-h-[calc(100vh-5rem)] overflow-scroll py-8 md:max-h-screen md:max-w-[80%]">
+      <DialogContent className="max-h-[calc(100vh-5rem)] overflow-scroll py-8 md:max-h-screen">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? "Edit maintenance" : "Create maintenance"}
@@ -167,6 +168,17 @@ export default function MaintenanceDialog({
               value={formik.values.odometerKm}
               onChange={formik.handleChange}
               error={formik.errors.odometerKm}
+            />
+            <label className="mt-2 inline-block text-sm" htmlFor="remarks">
+              Remarks
+            </label>
+            <Input
+              id="remarks"
+              placeholder="Remarks"
+              type="text"
+              value={formik.values.remarks}
+              onChange={formik.handleChange}
+              error={formik.errors.remarks}
             />
           </div>
           <DialogFooter>

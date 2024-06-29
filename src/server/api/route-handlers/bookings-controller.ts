@@ -2,40 +2,26 @@ import { BookingsSchemaInput, GetBookingsInIntervalSchemaInput, UpdateBookingSch
 import { TRPCContext } from "../trpc-context";
 import { bookingsTable, clientInfoTable, driverDutyVouchersTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, desc, eq, gte, lte } from "drizzle-orm";
 
 export const createVehicleBookingHandler = async ({ ctx, input }: { ctx: TRPCContext, input: BookingsSchemaInput }) => {
     try {
         const res = await ctx.db.transaction(async (tx) => {
-            const clientInfo = await tx.insert(clientInfoTable).values({
-                clientName: input.clientName,
-                clientAddress: input.clientAddress,
-                clientPhone: input.clientPhone,
-                clientAltPhone: input.clientAltPhone,
-            }).returning();
+            const clientInfo = await tx.insert(clientInfoTable).values(input).returning();
 
             const bookingInfo = await tx.insert(bookingsTable).values({
+                ...input,
                 clientId: clientInfo.at(0)!.id,
-                vehicleId: input.vehicleId,
-                travelDateFrom: input.travelDateFrom,
-                travelDateTo: input.travelDateTo,
-                travelPlaceFrom: input.travelPlaceFrom,
-                travelPlaceTo: input.travelPlaceTo,
-                noOfPassengers: input.noOfPassengers,
-                bookingDate: input.bookingDate,
-                estimatedCost: input.estimatedCost,
-                advancePayment: input.advancePayment,
-                remainingPayment: input.remainingPayment,
             }).returning();
 
-            await tx.insert(driverDutyVouchersTable).values({
+            const voucherInfo = await tx.insert(driverDutyVouchersTable).values({
                 clientId: clientInfo.at(0)!.id,
                 bookingId: bookingInfo.at(0)!.id,
                 driverName: "",
                 vehicleId: input.vehicleId,
             }).returning();
 
-            return bookingInfo.at(0)!;
+            return { ...bookingInfo.at(0)!, ...clientInfo.at(0)!, id: bookingInfo.at(0)!.id, voucherId: voucherInfo.at(0)!.id };
         });
 
         return {
@@ -63,11 +49,12 @@ export const getBookingsInIntervalHandler = async ({ ctx, input }: { ctx: TRPCCo
                 lte(bookingsTable.bookingDate, input.to)
             ))
             .innerJoin(clientInfoTable, eq(bookingsTable.clientId, clientInfoTable.id))
-            .innerJoin(driverDutyVouchersTable, eq(bookingsTable.clientId, driverDutyVouchersTable.clientId));
+            .innerJoin(driverDutyVouchersTable, eq(bookingsTable.clientId, driverDutyVouchersTable.clientId))
+            .orderBy(desc(bookingsTable.bookingDate));
         return {
             status: 'success',
             data: {
-                bookings: res.map(x => ({ ...x.bookings, ...x.client_info, id: x.bookings.id, voucherId: x.driver_duty_vouchers.id })).sort((a, b) => a.bookingDate > b.bookingDate ? 1 : -1),
+                bookings: res.map(x => ({ ...x.bookings, ...x.client_info, ...x.driver_duty_vouchers, id: x.bookings.id, voucherId: x.driver_duty_vouchers.id })),
             },
         };
     }
@@ -89,25 +76,31 @@ export const updateBookingHandler = async ({ ctx, input }: { ctx: TRPCContext, i
                 clientAltPhone: input.clientAltPhone,
             }).where(eq(clientInfoTable.id, input.clientId)).returning();
 
-            const bookingInfo = await tx.update(bookingsTable).set({
-                vehicleId: input.vehicleId,
-                travelDateFrom: input.travelDateFrom,
-                travelDateTo: input.travelDateTo,
-                travelPlaceFrom: input.travelPlaceFrom,
-                travelPlaceTo: input.travelPlaceTo,
-                noOfPassengers: input.noOfPassengers,
-                bookingDate: input.bookingDate,
-                estimatedCost: input.estimatedCost,
-                advancePayment: input.advancePayment,
-                remainingPayment: input.remainingPayment,
-            }).where(eq(bookingsTable.id, input.id)).returning();
+            const bookingInfo = await tx.update(bookingsTable).set(input).where(eq(bookingsTable.id, input.id)).returning();
 
-            await tx.update(driverDutyVouchersTable).set({
+            const voucherInfo = await tx.update(driverDutyVouchersTable).set({
                 vehicleId: input.vehicleId,
-            }).where(eq(driverDutyVouchersTable.bookingId, input.id));
+            }).where(eq(driverDutyVouchersTable.bookingId, input.id)).returning();
 
-            return { ...bookingInfo.at(0)!, ...clientInfo.at(0)!, id: bookingInfo.at(0)!.id };
+            return { ...bookingInfo.at(0)!, ...clientInfo.at(0)!, id: bookingInfo.at(0)!.id, voucherId: voucherInfo.at(0)!.id };
         });
+        return {
+            status: 'success',
+            data: {
+                booking: res,
+            },
+        };
+    } catch (err: any) {
+        throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: err.message,
+        });
+    }
+}
+
+export const updatePaymentCollectedHandler = async ({ ctx, input }: { ctx: TRPCContext, input: { id: number, isPaymentCollected: boolean } }) => {
+    try {
+        const res = await ctx.db.update(bookingsTable).set({ isPaymentCollected: input.isPaymentCollected }).where(eq(bookingsTable.id, input.id)).returning();
         return {
             status: 'success',
             data: {

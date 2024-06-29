@@ -6,6 +6,7 @@ import { columns } from "./_components/trash-bookings-table-columns";
 import { trpc } from "@/trpc/react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { BookingsDataRangeContext } from "@/lib/contexts";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {};
 
@@ -17,10 +18,11 @@ export default function TrashBookings(props: Props) {
     new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
   );
 
-  const { data: res } = trpc.trash.getTrashBookingsInInterval.useQuery({
-    from,
-    to,
-  });
+  const { data: res, isLoading } =
+    trpc.trash.getTrashBookingsInInterval.useQuery({
+      from,
+      to,
+    });
 
   return (
     <>
@@ -52,6 +54,12 @@ export default function TrashBookings(props: Props) {
             />
           </div>
         </div>
+        {isLoading && (
+          <div className="flex w-full flex-col gap-4 py-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-72 w-full" />
+          </div>
+        )}
         {res?.data.bookings && (
           <BookingsDataRangeContext.Provider value={{ from, to }}>
             <BookingsDataTable columns={columns} data={res.data.bookings} />

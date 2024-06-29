@@ -6,7 +6,7 @@ const _baseBookingSchema = {
     clientAddress: z.string({ required_error: 'Client address is required' })
         .min(1, 'Client address is required'),
     clientPhone: z.number({ required_error: 'Client phone is required' }),
-    clientAltPhone: z.number().nullable(),
+    clientAltPhone: z.number().optional().nullable(),
     vehicleId: z.number({ required_error: 'Vehicle is required' }).gt(0, 'Vehicle is required'),
     travelPlaceFrom: z.string({ required_error: 'Travel place is required' })
         .min(1, 'Travel place is required'),
@@ -36,7 +36,10 @@ export const bookingsSchema = z.object(_baseBookingSchema)
         path: ['clientPhone'],
         message: 'Client phone number should be 10 digits',
     })
-    .refine((data) => data.clientAltPhone && data.clientAltPhone.toString().length === 10, {
+    .refine((data) => {
+        if (!data.clientAltPhone) return true
+        return data.clientAltPhone.toString().length === 10
+    }, {
         path: ['clientAltPhone'],
         message: 'Client alt phone number should be 10 digits',
     });
@@ -58,7 +61,10 @@ export const updateBookingSchema = z.object({
         path: ['clientPhone'],
         message: 'Client phone number should be 10 digits',
     })
-    .refine((data) => data.clientAltPhone && data.clientAltPhone.toString().length === 10, {
+    .refine((data) => {
+        if (!data.clientAltPhone) return true
+        return data.clientAltPhone.toString().length === 10
+    }, {
         path: ['clientAltPhone'],
         message: 'Client alt phone number should be 10 digits',
     });

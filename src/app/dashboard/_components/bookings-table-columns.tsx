@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { RouterOutputs, trpc } from "@/trpc/react";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const columns: ColumnDef<
   RouterOutputs["bookings"]["getBookingsInInterval"]["data"]["bookings"][0]
@@ -26,25 +27,19 @@ export const columns: ColumnDef<
   {
     header: "ID",
     accessorKey: "id",
-  },
-  {
-    header: "Driver voucher",
-    accessorKey: "voucherId",
-    cell: ({ row }) => {
-      return (
-        <button
-          className="rounded-xl bg-muted p-1 px-3 transition-all hover:bg-green-700 hover:text-white"
-          onClick={() => {
-            navigator.clipboard.writeText(
-              `${window.location.origin}/duty-vouchers/${row.original.voucherId}`,
-            );
-            toast.success("Copied to clipboard");
-          }}
-        >
-          copy
-        </button>
-      );
-    },
+    cell: ({ row }) => (
+      <button
+        className="rounded-xl bg-muted p-1 px-3 transition-all hover:bg-green-700 hover:text-white"
+        onClick={() => {
+          navigator.clipboard.writeText(
+            `${window.location.origin}/duty-vouchers/${row.original.voucherId}`,
+          );
+          toast.success("Copied to clipboard");
+        }}
+      >
+        {row.original.id}
+      </button>
+    ),
   },
   {
     accessorKey: "clientName",
@@ -81,7 +76,7 @@ export const columns: ColumnDef<
       const vehicle = vehicles?.find(
         (vehicle) => vehicle.id === row.original.vehicleId,
       );
-      return vehicle?.plateNumber ?? "N/A";
+      return vehicle?.type ?? "N/A";
     },
   },
   {
@@ -138,6 +133,34 @@ export const columns: ColumnDef<
   {
     header: "Remaining Payment",
     accessorKey: "remainingPayment",
+  },
+  {
+    header: "Payment Collected By Driver",
+    accessorKey: "paymentCollected",
+  },
+  {
+    header: "Payment Received At Parth",
+    accessorKey: "isPaymentCollected",
+    cell: ({ row }) => {
+      const trpcUtils = trpc.useUtils();
+      const updatePaymentCollected =
+        trpc.bookings.updatePaymentCollected.useMutation({
+          onSuccess: () => {
+            trpcUtils.bookings.getBookingsInInterval.refetch();
+          },
+        });
+      return (
+        <Checkbox
+          checked={row.original.isPaymentCollected}
+          onCheckedChange={(checked) => {
+            updatePaymentCollected.mutate({
+              id: row.original.id,
+              isPaymentCollected: Boolean(checked),
+            });
+          }}
+        />
+      );
+    },
   },
   {
     id: "actions",

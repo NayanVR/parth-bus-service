@@ -8,6 +8,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { BookingsDataRangeContext } from "@/lib/contexts";
 import { CSVLink } from "react-csv";
 import { formatIndianDateFromDate } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {};
 
@@ -19,10 +20,12 @@ export default function Dashboard(props: Props) {
     new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
   );
 
-  const { data: res } = trpc.bookings.getBookingsInInterval.useQuery({
-    from,
-    to,
-  });
+  const { data: res, isLoading } = trpc.bookings.getBookingsInInterval.useQuery(
+    {
+      from,
+      to,
+    },
+  );
 
   const vehicles = trpc.vehicles.getAllVehicles.useQuery().data?.data.vehicles;
 
@@ -34,7 +37,8 @@ export default function Dashboard(props: Props) {
       "Client Alt Phone": booking.clientAltPhone,
       "Client Address": booking.clientAddress,
       Vehicle:
-        vehicles?.find((vehicle) => vehicle.id === booking.vehicleId) || "N/A",
+        vehicles?.find((vehicle) => vehicle.id === booking.vehicleId)?.type ||
+        "N/A",
       "Travel Place From": booking.travelPlaceFrom,
       "Travel Place To": booking.travelPlaceTo,
       "Travel Date From": formatIndianDateFromDate(booking.travelDateFrom),
@@ -79,6 +83,12 @@ export default function Dashboard(props: Props) {
             />
           </div>
         </div>
+        {isLoading && (
+          <div className="flex w-full flex-col gap-4 py-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-72 w-full" />
+          </div>
+        )}
         {res?.data.bookings && (
           <BookingsDataRangeContext.Provider value={{ from, to }}>
             <BookingsDataTable columns={columns} data={res.data.bookings} />

@@ -57,12 +57,12 @@ export default function BookingDialog({
   const [paymentType, setPaymentType] = useState(paymentMethods.estimatedCost);
 
   const createBooking = trpc.bookings.createVehicleBooking.useMutation({
-    onSuccess: () => {
+    onSuccess: (res) => {
       trpcUtils.bookings.getBookingsInInterval.refetch();
     },
   });
   const updateBooking = trpc.bookings.updateVehicleBooking.useMutation({
-    onSuccess: () => {
+    onSuccess: (res) => {
       trpcUtils.bookings.getBookingsInInterval.refetch();
     },
   });
@@ -160,6 +160,12 @@ export default function BookingDialog({
       );
     }
   }, [formik.values.estimatedKMs, formik.values.costPerKm]);
+
+  useEffect(() => {
+    if (data?.costPerKm && data?.estimatedKMs) {
+      setPaymentType(paymentMethods.costPerKMs);
+    }
+  }, [data]);
 
   // true if date is occupied
   const checkOccupancy = useCallback(
@@ -415,7 +421,9 @@ export default function BookingDialog({
                   ))}
                 </SelectContent>
               </Select>
-              {paymentType === paymentMethods.costPerKMs && (
+              {(paymentType === paymentMethods.costPerKMs ||
+                data?.costPerKm ||
+                data?.estimatedKMs) && (
                 <>
                   <label
                     className="mt-2 inline-block text-sm"

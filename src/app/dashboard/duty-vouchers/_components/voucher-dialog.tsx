@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,7 @@ import { RouterOutputs, trpc } from "@/trpc/react";
 import {
   DriverDutyVoucherInput,
   driverDutyVoucherSchema,
+  UpdateDriverDutyVoucherInput,
 } from "@/lib/types/driver-duty-schema";
 import { toast } from "sonner";
 
@@ -52,6 +53,10 @@ export default function VoucherDialog({
       },
     });
 
+  const isPaymentInKMs = useMemo(() => {
+    return !!data?.costPerKm;
+  }, [data]);
+
   const formik = useFormik({
     initialValues: {
       clientId: data?.clientId!,
@@ -65,19 +70,31 @@ export default function VoucherDialog({
       odometerStart: data?.odometerStart ?? 0,
       odometerEnd: data?.odometerEnd ?? 0,
       paymentCollected: data?.paymentCollected ?? 0,
+      tollTaxes: data?.tollTaxes ?? 0,
+      additionalExpenses: data?.additionalExpenses ?? 0,
       remarks: data?.remarks ?? "",
     } satisfies DriverDutyVoucherInput,
     validate: toFormikValidate(driverDutyVoucherSchema),
     onSubmit: async (values) => {
-      if (values.paymentCollected > data?.remainingPayment!) {
-        toast.error("Payment collected cannot be more than remaining");
-        return;
-      }
-      // if (isEdit) {
-      const res = await updateDriverDutyVoucher.mutateAsync({
+      // if (values.paymentCollected > data?.remainingPayment!) {
+      //   toast.error("Payment collected cannot be more than remaining");
+      //   return;
+      // }
+      const inputData: UpdateDriverDutyVoucherInput = {
         id: data?.id!,
         ...values,
-      });
+        estimatedKMs: isPaymentInKMs
+          ? values.odometerEnd! - values.odometerStart!
+          : data?.estimatedKMs,
+        estimatedCost: isPaymentInKMs
+          ? (values.odometerEnd! - values.odometerStart!) * data?.costPerKm!
+          : data?.estimatedCost,
+        remainingPayment: isPaymentInKMs
+          ? amountToCollect! - values.paymentCollected
+          : data?.remainingPayment! - values.paymentCollected,
+      };
+      // if (isEdit) {
+      const res = await updateDriverDutyVoucher.mutateAsync(inputData);
       if (res.status === "success") {
         setIsOpen(false);
       }
@@ -89,6 +106,21 @@ export default function VoucherDialog({
       // }
     },
   });
+
+  const amountToCollect = useMemo(() => {
+    if (isPaymentInKMs && formik.values.odometerEnd) {
+      return (
+        (formik.values.odometerEnd! - formik.values.odometerStart!) *
+          data?.costPerKm! -
+        data?.advancePayment!
+      );
+    }
+    return data?.remainingPayment;
+  }, [formik.values.odometerEnd, formik.values.odometerStart]);
+
+  const kmsTravelled = useMemo(() => {
+    return formik.values.odometerEnd - formik.values.odometerStart;
+  }, [formik.values.odometerEnd, formik.values.odometerStart]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -208,6 +240,19 @@ export default function VoucherDialog({
                 onChange={formik.handleChange}
                 error={formik.errors.odometerEnd}
               />
+              <label
+                className="mt-2 inline-block text-sm"
+                htmlFor="kmsTravelled"
+              >
+                Kms Travelled
+              </label>
+              <Input
+                readOnly
+                id="kmsTravelled"
+                placeholder="Kms Travelled"
+                type="number"
+                value={kmsTravelled}
+              />
             </div>
             <div className="w-full md:w-1/3">
               <h4 className="font-bold">Driver Info</h4>
@@ -239,7 +284,21 @@ export default function VoucherDialog({
                 className="mt-2 inline-block text-sm"
                 htmlFor="paymentCollected"
               >
-                Payment Collected
+                Payment{" "}
+                {amountToCollect && amountToCollect <= 0 ? (
+                  <span className="text-green-500">Completed</span>
+                ) : (
+                  <span className="text-red-500">
+                    Amount To Pay:{" "}
+                    <span className="font-bold">{amountToCollect}</span>{" "}
+                  </span>
+                )}
+                {isPaymentInKMs && (
+                  <span>
+                    {" | ("}Cost/KM: {data?.costPerKm}
+                    {")"}
+                  </span>
+                )}
               </label>
               <Input
                 id="paymentCollected"
@@ -248,6 +307,31 @@ export default function VoucherDialog({
                 value={formik.values.paymentCollected}
                 onChange={formik.handleChange}
                 error={formik.errors.paymentCollected}
+              />
+              <label className="mt-2 inline-block text-sm" htmlFor="tollTaxes">
+                Toll Taxes
+              </label>
+              <Input
+                id="tollTaxes"
+                placeholder="Toll Taxes"
+                type="number"
+                value={formik.values.tollTaxes}
+                onChange={formik.handleChange}
+                error={formik.errors.tollTaxes}
+              />
+              <label
+                className="mt-2 inline-block text-sm"
+                htmlFor="additionalExpenses"
+              >
+                Additional Expenses
+              </label>
+              <Input
+                id="additionalExpenses"
+                placeholder="Additional expenses"
+                type="number"
+                value={formik.values.additionalExpenses}
+                onChange={formik.handleChange}
+                error={formik.errors.additionalExpenses}
               />
               <label className="mt-2 inline-block text-sm" htmlFor="remarks">
                 Remarks

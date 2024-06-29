@@ -12,6 +12,7 @@ const _baseMaintenanceSchema = {
     maintenanceDateFrom: z.date({ required_error: 'Maintenance date from is required' }),
     maintenanceDateTo: z.date({ required_error: 'Maintenance date to is required' }),
     odometerKm: z.number({ required_error: 'Odometer km is required' }).min(0, 'Odometer km cannot be negative'),
+    remarks: z.string().optional(),
 };
 
 export const maintenanceSchema = z.object(_baseMaintenanceSchema)

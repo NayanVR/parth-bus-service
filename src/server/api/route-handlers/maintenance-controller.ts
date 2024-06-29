@@ -7,7 +7,7 @@ import { GetMaintenancesInIntervalInput, MaintenanceInput, UpdateMaintenanceInpu
 import { TRPCContext } from "../trpc-context";
 import { maintenanceTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, desc, eq, gte, lte } from "drizzle-orm";
 
 export const createMaintenanceHandler = async ({ ctx, input }: { ctx: TRPCContext, input: MaintenanceInput }) => {
     try {
@@ -35,11 +35,12 @@ export const getMaintenancesInIntervalHandler = async ({ ctx, input }: { ctx: TR
                 eq(maintenanceTable.isDeleted, false),
                 gte(maintenanceTable.maintenanceDateFrom, input.from),
                 lte(maintenanceTable.maintenanceDateTo, input.to)
-            ));
+            ))
+            .orderBy(desc(maintenanceTable.createdAt));
         return {
             status: 'success',
             data: {
-                maintenances: res.sort((a, b) => a.createdAt > b.createdAt ? 1 : -1),
+                maintenances: res,
             },
         };
     } catch (err: any) {

@@ -94,11 +94,20 @@ export function BookingsDataTable<TData, TValue>({
                 const remainingPayment = row.getValue(
                   "remainingPayment",
                 ) as number;
+                const isPaymentCollected = row.getValue(
+                  "isPaymentCollected",
+                ) as Boolean;
+
+                let classes = "";
+                if (remainingPayment <= 0)
+                  classes = "bg-yellow-100 hover:bg-yellow-200";
+                if (isPaymentCollected)
+                  classes = "bg-green-100 hover:bg-green-200";
                 return (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className={`${remainingPayment <= 0 ? "bg-green-100 hover:bg-green-200" : ""}`}
+                    className={classes}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
