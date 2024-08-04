@@ -7,18 +7,18 @@ import { trpc } from "@/trpc/react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { BookingsDataRangeContext } from "@/lib/contexts";
 import { CSVLink } from "react-csv";
-import { formatIndianDateFromDate } from "@/lib/utils";
+import {
+  formatIndianDateFromDate,
+  getDefaultStartDate,
+  getDefaultEndDate,
+} from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {};
 
 export default function Dashboard(props: Props) {
-  const [from, setFrom] = useState<Date>(
-    new Date(new Date().getTime() - 70 * 24 * 60 * 60 * 1000),
-  );
-  const [to, setTo] = useState<Date>(
-    new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
-  );
+  const [from, setFrom] = useState<Date>(getDefaultStartDate());
+  const [to, setTo] = useState<Date>(getDefaultEndDate());
 
   const { data: res, isLoading } = trpc.bookings.getBookingsInInterval.useQuery(
     {

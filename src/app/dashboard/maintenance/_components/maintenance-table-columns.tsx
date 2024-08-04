@@ -26,8 +26,8 @@ export const columns: ColumnDef<
     accessorKey: "id",
   },
   {
-    accessorKey: "vehicleId",
-    header: "Vehicle ID",
+    accessorKey: "vehicleType",
+    header: "Vehicle Type",
     cell: ({ row }) => {
       const vehicles =
         trpc.vehicles.getAllVehicles.useQuery().data?.data.vehicles;

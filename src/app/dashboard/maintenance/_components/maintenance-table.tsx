@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import MaintenanceDialog from "./maintenance-dialog";
 import { trpc } from "@/trpc/react";
+import { Input } from "@/components/ui/input";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -36,7 +37,6 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const vehicles = trpc.vehicles.getAllVehicles.useQuery().data?.data.vehicles;
 
   const table = useReactTable({
     data,
@@ -57,18 +57,12 @@ export function DataTable<TData, TValue>({
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
         {/* <Input
-          placeholder="Search plate number..."
+          placeholder="Search vehicle type..."
           value={
-            (table.getColumn("vehicleId")?.getFilterValue() as string) ?? ""
+            (table.getColumn("vehicleType")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table
-              .getColumn("vehicleId")
-              ?.setFilterValue(
-                vehicles?.find((vehicle) =>
-                  vehicle.plateNumber.includes(event.target.value),
-                )?.plateNumber ?? "",
-              )
+            table.getColumn("vehicleType")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         /> */}

@@ -6,18 +6,18 @@ import { trpc } from "@/trpc/react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DataTable } from "./_components/maintenance-table";
 import { CSVLink } from "react-csv";
-import { formatIndianDateFromDate } from "@/lib/utils";
+import {
+  formatIndianDateFromDate,
+  getDefaultEndDate,
+  getDefaultStartDate,
+} from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {};
 
 export default function Maintenances(props: Props) {
-  const [from, setFrom] = useState<Date>(
-    new Date(new Date().getTime() - 70 * 24 * 60 * 60 * 1000),
-  );
-  const [to, setTo] = useState<Date>(
-    new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
-  );
+  const [from, setFrom] = useState<Date>(getDefaultStartDate());
+  const [to, setTo] = useState<Date>(getDefaultEndDate());
 
   const { data: res, isLoading } =
     trpc.maintenance.getMaintenancesInInterval.useQuery({

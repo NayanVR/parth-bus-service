@@ -48,3 +48,11 @@ export function optimizeDateRanges(dateRanges: DateRange[]) {
   mergedRanges.push(currentRange);
   return mergedRanges;
 }
+
+export function getDefaultStartDate() {
+  return new Date(new Date().getFullYear(), 0, 1);
+}
+
+export function getDefaultEndDate() {
+  return new Date(new Date().getFullYear(), 11, 31);
+}

@@ -59,14 +59,14 @@ export const loginHandler = async ({ ctx, input }: { ctx: TRPCContext, input: Lo
 
         const secret = env.JWT_SECRET!;
         const token = jwt.sign({ sub: input.email }, secret, {
-            expiresIn: 60 * 60,
+            expiresIn: 60 * 60 * 24 * 30,
         });
 
         const cookieOptions = {
             httpOnly: true,
             path: '/',
             secure: process.env.NODE_ENV !== 'development',
-            maxAge: 60 * 60,
+            maxAge: 60 * 60 * 24 * 30,
         };
 
         cookies().set('token', token, cookieOptions);

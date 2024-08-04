@@ -6,16 +6,13 @@ import { trpc } from "@/trpc/react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DataTable } from "./_components/trash-maintenance-table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getDefaultStartDate } from "@/lib/utils";
 
 type Props = {};
 
 export default function TrashMaintenances(props: Props) {
-  const [from, setFrom] = useState<Date>(
-    new Date(new Date().getTime() - 70 * 24 * 60 * 60 * 1000),
-  );
-  const [to, setTo] = useState<Date>(
-    new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
-  );
+  const [from, setFrom] = useState<Date>(getDefaultStartDate());
+  const [to, setTo] = useState<Date>(getDefaultStartDate());
 
   const { data: res, isLoading } =
     trpc.trash.getTrashMaintenancesInInterval.useQuery({
