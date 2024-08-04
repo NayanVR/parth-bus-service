@@ -48,7 +48,7 @@ export function DatePicker({ className, date, setDate, disabled }: Props) {
           }}
           initialFocus
           className={cn(className, "w-auto")}
-          disabled={disabled}
+          // disabled={disabled}
         />
       </PopoverContent>
     </Popover>
