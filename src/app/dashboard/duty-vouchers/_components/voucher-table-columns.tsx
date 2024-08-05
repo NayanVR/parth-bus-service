@@ -84,10 +84,6 @@ export const columns: ColumnDef<
     },
   },
   {
-    header: "Driver Expense",
-    accessorKey: "driverExpense",
-  },
-  {
     header: "Odometer Start",
     accessorKey: "odometerStart",
   },
@@ -105,12 +101,23 @@ export const columns: ColumnDef<
     accessorKey: "paymentCollected",
   },
   {
+    header: "Fuel Expense",
+    accessorKey: "driverExpense",
+  },
+  {
     header: "Toll Taxes",
     accessorKey: "tollTaxes",
   },
   {
     header: "Additional Expenses",
     accessorKey: "additionalExpenses",
+  },
+  {
+    header: "Total Balance with Driver",
+    accessorKey: "totalBalance",
+    cell: ({ row }) => {
+      return row.original.driverExpense - row.original.additionalExpenses;
+    },
   },
   {
     header: "Remarks",

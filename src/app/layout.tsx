@@ -14,7 +14,7 @@ const fontSans = FontSans({
 export const metadata = {
   title: "Parth Bus Service",
   description: "Bus service for all your needs",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  icons: [{ rel: "icon", url: "/logo.jpeg" }],
 };
 
 export default function RootLayout({

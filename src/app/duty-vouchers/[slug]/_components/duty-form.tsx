@@ -87,7 +87,7 @@ function DutyForm({ data }: Props) {
     },
   });
 
-  const amountToCollect = useMemo(() => {
+  const travelCost = useMemo(() => {
     if (isPaymentInKMs && formik.values.odometerEnd) {
       return (
         (formik.values.odometerEnd! - formik.values.odometerStart!) *
@@ -97,6 +97,10 @@ function DutyForm({ data }: Props) {
     }
     return data.remainingPayment;
   }, [formik.values.odometerEnd, formik.values.odometerStart]);
+
+  const amountToCollect = useMemo(() => {
+    return travelCost + formik.values.tollTaxes;
+  }, [travelCost, formik.values.tollTaxes]);
 
   return (
     <>
@@ -222,36 +226,38 @@ function DutyForm({ data }: Props) {
               onChange={formik.handleChange}
               error={formik.errors.driverName}
             />
-            <label
-              className="mt-2 inline-block text-sm"
-              htmlFor="driverExpense"
-            >
-              Driver Expense
+            <label className="mt-2 inline-block text-sm" htmlFor="tollTaxes">
+              Toll Taxes
             </label>
             <Input
-              id="driverExpense"
-              placeholder="Driver Expense"
+              id="tollTaxes"
+              placeholder="Toll Taxes"
               type="number"
-              value={formik.values.driverExpense}
+              value={formik.values.tollTaxes}
               onChange={formik.handleChange}
-              error={formik.errors.driverExpense}
+              error={formik.errors.tollTaxes}
             />
             <label
               className="mt-2 inline-block text-sm"
               htmlFor="paymentCollected"
             >
+              <span>
+                Travel Cost{": "}
+                <span className="font-bold text-green-700">{travelCost}</span>
+              </span>
+              {isPaymentInKMs && (
+                <span>
+                  {" | "}Cost per KM: {data.costPerKm}
+                </span>
+              )}
+              <br />
+              Travel Cost + Toll Taxes{" = "}
               Payment{" "}
               {amountToCollect <= 0 ? (
-                <span className="text-green-500">Completed</span>
+                <span className="text-green-700">Completed</span>
               ) : (
                 <span className="text-red-500">
                   Pending: <span className="font-bold">{amountToCollect}</span>{" "}
-                </span>
-              )}
-              {isPaymentInKMs && (
-                <span>
-                  {" | ("}Cost per KM: {data.costPerKm}
-                  {")"}
                 </span>
               )}
             </label>
@@ -263,16 +269,19 @@ function DutyForm({ data }: Props) {
               onChange={formik.handleChange}
               error={formik.errors.paymentCollected}
             />
-            <label className="mt-2 inline-block text-sm" htmlFor="tollTaxes">
-              Toll Taxes
+            <label
+              className="mt-2 inline-block text-sm"
+              htmlFor="driverExpense"
+            >
+              Fuel Expense
             </label>
             <Input
-              id="tollTaxes"
-              placeholder="Toll Taxes"
+              id="driverExpense"
+              placeholder="Fuel Expense"
               type="number"
-              value={formik.values.tollTaxes}
+              value={formik.values.driverExpense}
               onChange={formik.handleChange}
-              error={formik.errors.tollTaxes}
+              error={formik.errors.driverExpense}
             />
             <label
               className="mt-2 inline-block text-sm"
