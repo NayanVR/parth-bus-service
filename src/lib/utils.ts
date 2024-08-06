@@ -49,6 +49,17 @@ export function optimizeDateRanges(dateRanges: DateRange[]) {
   return mergedRanges;
 }
 
+export function formatDateToInput(date: Date | undefined): string {
+  if (!date) return "";
+  const pad = (num: number) => (num < 10 ? '0' + num : num);
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 export function getDefaultStartDate() {
   return new Date(new Date().getFullYear(), 0, 1);
 }

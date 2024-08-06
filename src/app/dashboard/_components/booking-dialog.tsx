@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { RouterOutputs, trpc } from "@/trpc/react";
-import { daysBetweenDates } from "@/lib/utils";
+import { daysBetweenDates, formatDateToInput } from "@/lib/utils";
 import { toast } from "sonner";
 import { BookingsDataRangeContext } from "@/lib/contexts";
 
@@ -321,11 +321,17 @@ export default function BookingDialog({
               <label className="mt-2 inline-block text-sm" htmlFor="travelFrom">
                 Travel Date From
               </label>
-              <DatePicker
-                date={formik.values.travelDateFrom}
-                setDate={(date) => formik.setFieldValue("travelDateFrom", date)}
-                className="w-full"
-                disabled={checkOccupancy || occupiedDates.isLoading}
+              <input
+                type="datetime-local"
+                name="travelDateFrom"
+                className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                defaultValue={formatDateToInput(formik.values.travelDateFrom)}
+                onChange={(e) => {
+                  formik.setFieldValue(
+                    "travelDateFrom",
+                    new Date(e.target.value),
+                  );
+                }}
               />
               {formik.errors.travelDateFrom && (
                 <p className="text-sm text-destructive">
@@ -335,11 +341,17 @@ export default function BookingDialog({
               <label className="mt-2 inline-block text-sm" htmlFor="travelTo">
                 Travel Date To
               </label>
-              <DatePicker
-                date={formik.values.travelDateTo}
-                setDate={(date) => formik.setFieldValue("travelDateTo", date)}
-                className="w-full"
-                disabled={checkOccupancy}
+              <input
+                type="datetime-local"
+                name="travelDateTo"
+                className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                defaultValue={formatDateToInput(formik.values.travelDateTo)}
+                onChange={(e) => {
+                  formik.setFieldValue(
+                    "travelDateTo",
+                    new Date(e.target.value),
+                  );
+                }}
               />
               {formik.errors.travelDateTo && (
                 <p className="text-sm text-destructive">
@@ -383,12 +395,14 @@ export default function BookingDialog({
               >
                 Booking Date
               </label>
-              <DatePicker
-                date={formik.values.bookingDate}
-                setDate={(date) => {
-                  formik.setFieldValue("bookingDate", date);
+              <input
+                type="datetime-local"
+                name="bookingDate"
+                className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                defaultValue={formatDateToInput(formik.values.bookingDate)}
+                onChange={(e) => {
+                  formik.setFieldValue("bookingDate", new Date(e.target.value));
                 }}
-                className="w-full"
               />
               {formik.errors.bookingDate && (
                 <p className="text-sm text-destructive">

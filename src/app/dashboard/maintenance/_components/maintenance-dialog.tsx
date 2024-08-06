@@ -23,6 +23,7 @@ import {
   maintenanceSchema,
 } from "@/lib/types/maintenance-schema";
 import { DatePicker } from "@/components/ui/date-picker";
+import { formatDateToInput } from "@/lib/utils";
 
 type Props = {
   isOpen: boolean;
@@ -129,14 +130,21 @@ export default function MaintenanceDialog({
               error={formik.errors.maintenanceCost}
             />
             <label className="mt-2 inline-block text-sm" htmlFor="travelFrom">
-              Travel Date From
+              Maintenance Date From
             </label>
-            <DatePicker
-              date={formik.values.maintenanceDateFrom}
-              setDate={(date) =>
-                formik.setFieldValue("maintenanceDateFrom", date)
-              }
-              className="w-full"
+            <input
+              type="datetime-local"
+              name="maintenanceDateFrom"
+              className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              defaultValue={formatDateToInput(
+                formik.values.maintenanceDateFrom,
+              )}
+              onChange={(e) => {
+                formik.setFieldValue(
+                  "maintenanceDateFrom",
+                  new Date(e.target.value),
+                );
+              }}
             />
             {formik.errors.maintenanceDateFrom && (
               <p className="text-sm text-destructive">
@@ -144,14 +152,19 @@ export default function MaintenanceDialog({
               </p>
             )}
             <label className="mt-2 inline-block text-sm" htmlFor="travelTo">
-              Travel Date To
+              Maintenance Date To
             </label>
-            <DatePicker
-              date={formik.values.maintenanceDateTo}
-              setDate={(date) =>
-                formik.setFieldValue("maintenanceDateTo", date)
-              }
-              className="w-full"
+            <input
+              type="datetime-local"
+              name="maintenanceDateTo"
+              className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              defaultValue={formatDateToInput(formik.values.maintenanceDateTo)}
+              onChange={(e) => {
+                formik.setFieldValue(
+                  "maintenanceDateTo",
+                  new Date(e.target.value),
+                );
+              }}
             />
             {formik.errors.maintenanceDateTo && (
               <p className="text-sm text-destructive">
