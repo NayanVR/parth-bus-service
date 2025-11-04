@@ -1,8 +1,8 @@
 import { BookingsSchemaInput, GetBookingsInIntervalSchemaInput, UpdateBookingSchemaInput } from "@/lib/types/bookings-schema";
-import { TRPCContext } from "../trpc-context";
 import { bookingsTable, clientInfoTable, driverDutyVouchersTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { TRPCContext } from "../trpc-context";
 
 export const createVehicleBookingHandler = async ({ ctx, input }: { ctx: TRPCContext, input: BookingsSchemaInput }) => {
     try {
@@ -31,9 +31,12 @@ export const createVehicleBookingHandler = async ({ ctx, input }: { ctx: TRPCCon
             },
         };
     } catch (err: any) {
+        console.error("Database transaction failed:", err);
+
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
-            message: err.message,
+            message: `Database operation failed: ${err.message}`,
+            cause: err,
         });
     }
 };
@@ -59,9 +62,12 @@ export const getBookingsInIntervalHandler = async ({ ctx, input }: { ctx: TRPCCo
         };
     }
     catch (err: any) {
+        console.error("Database transaction failed:", err);
+
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
-            message: err.message,
+            message: `Database operation failed: ${err.message}`,
+            cause: err,
         });
     }
 }
@@ -91,9 +97,12 @@ export const updateBookingHandler = async ({ ctx, input }: { ctx: TRPCContext, i
             },
         };
     } catch (err: any) {
+        console.error("Database transaction failed:", err);
+
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
-            message: err.message,
+            message: `Database operation failed: ${err.message}`,
+            cause: err,
         });
     }
 }
@@ -108,9 +117,12 @@ export const updatePaymentCollectedHandler = async ({ ctx, input }: { ctx: TRPCC
             },
         };
     } catch (err: any) {
+        console.error("Database transaction failed:", err);
+
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
-            message: err.message,
+            message: `Database operation failed: ${err.message}`,
+            cause: err,
         });
     }
 }
@@ -129,9 +141,12 @@ export const deleteBookingHandler = async ({ ctx, input: id }: { ctx: TRPCContex
             },
         };
     } catch (err: any) {
+        console.error("Database transaction failed:", err);
+
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
-            message: err.message,
+            message: `Database operation failed: ${err.message}`,
+            cause: err,
         });
     }
 }
