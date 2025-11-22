@@ -62,14 +62,14 @@ export function formatDateToInput(date: Date | undefined): string {
 
 export function getDefaultStartDate() {
   const date = new Date();
-  date.setMonth(date.getMonth() - 1);
+  date.setMonth(date.getMonth() - 3);
   date.setHours(0, 0, 0, 0);
   return date;
 }
 
 export function getDefaultEndDate() {
   const date = new Date();
-  date.setMonth(date.getMonth() + 1);
+  date.setMonth(date.getMonth() + 3);
   date.setHours(23, 59, 59, 999);
   return date;
 }
