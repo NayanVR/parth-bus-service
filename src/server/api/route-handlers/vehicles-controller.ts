@@ -3,7 +3,7 @@ import { CreateVehicleInput, UpdateVehicleInput, VehicleOccupiedDatesInput } fro
 import { optimizeDateRanges } from "@/lib/utils";
 import { bookingsTable, maintenanceTable, vehiclesTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { and, desc, eq, gte, lte, ne } from "drizzle-orm";
 import { TRPCContext } from "../trpc-context";
 
 export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPCContext, input: VehicleOccupiedDatesInput }) {
@@ -19,7 +19,8 @@ export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPC
                         eq(bookingsTable.isDeleted, false),
                         eq(bookingsTable.vehicleId, input.vehicleId),
                         gte(bookingsTable.travelDateFrom, input.from),
-                        lte(bookingsTable.travelDateTo, input.to)
+                        lte(bookingsTable.travelDateTo, input.to),
+                        input.excludeBookingId ? ne(bookingsTable.id, input.excludeBookingId) : undefined
                     )
                 );
 

@@ -54,6 +54,10 @@ export default function BookingDialog({
       console.log("Booking created successfully:", res);
       trpcUtils.bookings.getBookingsInInterval.refetch();
     },
+    onError: (error) => {
+      console.error("Failed to create booking:", error);
+      toast.error(`Failed to create booking: ${error.message}`);
+    },
   });
   const updateBooking = trpc.bookings.updateVehicleBooking.useMutation({
     onSuccess: (res) => {
@@ -83,10 +87,15 @@ export default function BookingDialog({
     validate: toFormikValidate(bookingsSchema),
     onSubmit: async (values) => {
       console.log("Form submitted with values:", values);
-      if (
-        checkOccupancy(values.travelDateFrom) ||
-        checkOccupancy(values.travelDateTo)
-      ) {
+
+      if (values.travelDateFrom < from || values.travelDateTo > to) {
+        toast.error(
+          "Please increase your dashboard date range to include the selected travel dates.",
+        );
+        return;
+      }
+
+      if (checkOccupancy(values.travelDateFrom, values.travelDateTo)) {
         console.warn("Vehicle occupancy check failed");
         toast.error("Vehicle is not available for the selected dates");
         return;
@@ -150,6 +159,7 @@ export default function BookingDialog({
       vehicleId: formik.values.vehicleId,
       from,
       to,
+      excludeBookingId: isEdit ? data?.id : undefined,
     }) ?? [];
 
   const noOfTravelDays = useMemo(() => {
@@ -184,26 +194,23 @@ export default function BookingDialog({
     }
   }, [data]);
 
-  // true if date is occupied
+  // true if date range is occupied
   const checkOccupancy = useCallback(
-    (date: Date) => {
-      const dateTime = date.getTime();
-      if (
-        data &&
-        (dateTime == data.travelDateFrom.getTime() ||
-          dateTime == data.travelDateTo.getTime())
-      )
-        return false;
-      if (date < from || date > to) return true;
+    (startDate: Date, endDate: Date) => {
+      const start = startDate.getTime();
+      const end = endDate.getTime();
+
       const dateFoundInRange = occupiedDates.data?.data.occupiedDates.find(
-        (occupiedDate) =>
-          dateTime >= occupiedDate.from.getTime() &&
-          dateTime <= occupiedDate.to.getTime(),
+        (occupiedDate) => {
+          const occStart = occupiedDate.from.getTime();
+          const occEnd = occupiedDate.to.getTime();
+          return start <= occEnd && end >= occStart;
+        },
       );
       if (dateFoundInRange) return true;
       return false;
     },
-    [data, occupiedDates],
+    [occupiedDates],
   );
 
   return (

@@ -18,6 +18,7 @@ export const vehicleOccupiedDatesSchema = z.object({
     vehicleId: z.number({ required_error: 'Vehicle id is required' }),
     from: z.date({ required_error: 'From date is required' }),
     to: z.date({ required_error: 'To date is required' }),
+    excludeBookingId: z.number().optional(),
 }).refine((data) => data.from <= data.to, {
     path: ['from'],
     message: 'From date cannot be more than to date',
