@@ -54,10 +54,6 @@ export default function BookingDialog({
       console.log("Booking created successfully:", res);
       trpcUtils.bookings.getBookingsInInterval.refetch();
     },
-    onError: (error) => {
-      console.error("Failed to create booking:", error);
-      toast.error(`Failed to create booking: ${error.message}`);
-    },
   });
   const updateBooking = trpc.bookings.updateVehicleBooking.useMutation({
     onSuccess: (res) => {
@@ -113,18 +109,30 @@ export default function BookingDialog({
             return;
           }
           console.log("Updating booking...");
-          const res = await updateBooking.mutateAsync({
+          const promise = updateBooking.mutateAsync({
             id: data?.id ?? 0,
             clientId: data?.clientId ?? 0,
             ...values,
           });
+          toast.promise(promise, {
+            loading: "Updating booking...",
+            success: "Booking updated successfully",
+            error: (err) => `Failed to update booking: ${err.message}`,
+          });
+          const res = await promise;
           console.log("Update response:", res);
           if (res.status === "success") {
             setIsOpen(false);
           }
         } else {
           console.log("Creating booking...");
-          const res = await createBooking.mutateAsync(values);
+          const promise = createBooking.mutateAsync(values);
+          toast.promise(promise, {
+            loading: "Creating booking...",
+            success: "Booking created successfully",
+            error: (err) => `Failed to create booking: ${err.message}`,
+          });
+          const res = await promise;
           console.log("Create response:", res);
           if (res.status === "success") {
             setIsOpen(false);

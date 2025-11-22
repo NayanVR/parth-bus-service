@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { RouterOutputs, trpc } from "@/trpc/react";
 import { formatIndianDateFromDate } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const columns: ColumnDef<
   RouterOutputs["trash"]["getTrashMaintenancesInInterval"]["data"]["maintenances"][0]
@@ -78,7 +79,12 @@ export const columns: ColumnDef<
             className="cursor-pointer text-green-700"
             size={20}
             onClick={() => {
-              restoreMaintenance.mutate(currentRow.id);
+              const promise = restoreMaintenance.mutateAsync(currentRow.id);
+              toast.promise(promise, {
+                loading: "Restoring maintenance...",
+                success: "Maintenance restored",
+                error: "Failed to restore maintenance",
+              });
             }}
           />
           <AlertDialog>
@@ -97,7 +103,14 @@ export const columns: ColumnDef<
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive"
-                  onClick={() => deleteMaintenance.mutate(currentRow.id)}
+                  onClick={() => {
+                    const promise = deleteMaintenance.mutateAsync(currentRow.id);
+                    toast.promise(promise, {
+                      loading: "Deleting maintenance permanently...",
+                      success: "Maintenance deleted permanently",
+                      error: "Failed to delete maintenance",
+                    });
+                  }}
                 >
                   Delete
                 </AlertDialogAction>

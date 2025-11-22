@@ -1,9 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, EditIcon, Trash2Icon } from "lucide-react";
-import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,9 +11,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { RouterOutputs, trpc } from "@/trpc/react";
-import VoucherDialog from "./voucher-dialog";
+import { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, EditIcon, Trash2Icon } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+import VoucherDialog from "./voucher-dialog";
 
 export const columns: ColumnDef<
   RouterOutputs["driverDuty"]["getDriverDutyVoucherInInterval"]["data"]["driverDutyVouchers"][0]
@@ -167,7 +167,14 @@ export const columns: ColumnDef<
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive"
-                  onClick={() => deleteDriverDutyVoucher.mutate(currentRow.id)}
+                  onClick={() => {
+                    const promise = deleteDriverDutyVoucher.mutateAsync(currentRow.id);
+                    toast.promise(promise, {
+                      loading: "Deleting voucher...",
+                      success: "Voucher deleted",
+                      error: "Failed to delete voucher",
+                    });
+                  }}
                 >
                   Delete
                 </AlertDialogAction>

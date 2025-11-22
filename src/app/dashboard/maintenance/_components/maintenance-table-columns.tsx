@@ -1,8 +1,5 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { EditIcon, Trash2Icon } from "lucide-react";
-import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,9 +11,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { RouterOutputs, trpc } from "@/trpc/react";
-import MaintenanceDialog from "./maintenance-dialog";
 import { formatIndianDateFromDate } from "@/lib/utils";
+import { RouterOutputs, trpc } from "@/trpc/react";
+import { ColumnDef } from "@tanstack/react-table";
+import { EditIcon, Trash2Icon } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import MaintenanceDialog from "./maintenance-dialog";
 
 export const columns: ColumnDef<
   RouterOutputs["maintenance"]["getMaintenancesInInterval"]["data"]["maintenances"][0]
@@ -103,7 +104,14 @@ export const columns: ColumnDef<
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive"
-                  onClick={() => deleteMaintenance.mutate(currentRow.id)}
+                  onClick={() => {
+                    const promise = deleteMaintenance.mutateAsync(currentRow.id);
+                    toast.promise(promise, {
+                      loading: "Deleting maintenance...",
+                      success: "Maintenance deleted",
+                      error: "Failed to delete maintenance",
+                    });
+                  }}
                 >
                   Delete
                 </AlertDialogAction>

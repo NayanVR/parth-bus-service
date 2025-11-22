@@ -15,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { RouterOutputs, trpc } from "@/trpc/react";
+import { toast } from "sonner";
 
 export const columns: ColumnDef<
   RouterOutputs["trash"]["getTrashVehicles"]["data"]["vehicles"][0]
@@ -74,7 +75,12 @@ export const columns: ColumnDef<
             className="cursor-pointer text-green-700"
             size={20}
             onClick={() => {
-              restoreMaintenance.mutate(currentRow.id);
+              const promise = restoreMaintenance.mutateAsync(currentRow.id);
+              toast.promise(promise, {
+                loading: "Restoring vehicle...",
+                success: "Vehicle restored",
+                error: "Failed to restore vehicle",
+              });
             }}
           />
           <AlertDialog>
@@ -94,7 +100,14 @@ export const columns: ColumnDef<
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive"
-                  onClick={() => deleteVehicle.mutate(currentRow.id)}
+                  onClick={() => {
+                    const promise = deleteVehicle.mutateAsync(currentRow.id);
+                    toast.promise(promise, {
+                      loading: "Deleting vehicle permanently...",
+                      success: "Vehicle deleted permanently",
+                      error: "Failed to delete vehicle",
+                    });
+                  }}
                 >
                   Delete
                 </AlertDialogAction>

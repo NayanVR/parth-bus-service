@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -6,10 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useFormik } from "formik";
-import { toFormikValidate } from "zod-formik-adapter";
 import {
   Select,
   SelectContent,
@@ -17,13 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RouterOutputs, trpc } from "@/trpc/react";
 import {
   DriverDutyVoucherInput,
   driverDutyVoucherSchema,
   UpdateDriverDutyVoucherInput,
 } from "@/lib/types/driver-duty-schema";
+import { RouterOutputs, trpc } from "@/trpc/react";
+import { useFormik } from "formik";
+import { useMemo } from "react";
 import { toast } from "sonner";
+import { toFormikValidate } from "zod-formik-adapter";
 
 type Props = {
   isOpen: boolean;
@@ -94,7 +94,13 @@ export default function VoucherDialog({
           : data?.remainingPayment! - values.paymentCollected,
       };
       // if (isEdit) {
-      const res = await updateDriverDutyVoucher.mutateAsync(inputData);
+      const promise = updateDriverDutyVoucher.mutateAsync(inputData);
+      toast.promise(promise, {
+        loading: "Updating voucher...",
+        success: "Voucher updated successfully",
+        error: "Failed to update voucher",
+      });
+      const res = await promise;
       if (res.status === "success") {
         setIsOpen(false);
       }

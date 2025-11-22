@@ -1,4 +1,4 @@
-import React from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -6,10 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useFormik } from "formik";
-import { toFormikValidate } from "zod-formik-adapter";
 import {
   Select,
   SelectContent,
@@ -17,13 +14,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RouterOutputs, trpc } from "@/trpc/react";
 import {
   MaintenanceInput,
   maintenanceSchema,
 } from "@/lib/types/maintenance-schema";
-import { DatePicker } from "@/components/ui/date-picker";
 import { formatDateToInput } from "@/lib/utils";
+import { RouterOutputs, trpc } from "@/trpc/react";
+import { useFormik } from "formik";
+import { toast } from "sonner";
+import { toFormikValidate } from "zod-formik-adapter";
 
 type Props = {
   isOpen: boolean;
@@ -63,15 +62,27 @@ export default function MaintenanceDialog({
     validate: toFormikValidate(maintenanceSchema),
     onSubmit: async (values) => {
       if (isEdit) {
-        const res = await updateMaintenance.mutateAsync({
+        const promise = updateMaintenance.mutateAsync({
           id: data?.id!,
           ...values,
         });
+        toast.promise(promise, {
+          loading: "Updating maintenance...",
+          success: "Maintenance updated successfully",
+          error: "Failed to update maintenance",
+        });
+        const res = await promise;
         if (res.status === "success") {
           setIsOpen(false);
         }
       } else {
-        const res = await createMaintenance.mutateAsync(values);
+        const promise = createMaintenance.mutateAsync(values);
+        toast.promise(promise, {
+          loading: "Creating maintenance...",
+          success: "Maintenance created successfully",
+          error: "Failed to create maintenance",
+        });
+        const res = await promise;
         if (res.status === "success") {
           setIsOpen(false);
         }

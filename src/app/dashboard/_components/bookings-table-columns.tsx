@@ -1,11 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { daysBetweenDates, formatIndianDateFromDate } from "@/lib/utils";
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, EditIcon, Trash2Icon } from "lucide-react";
-import BookingDialog from "./booking-dialog";
-import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,9 +11,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { RouterOutputs, trpc } from "@/trpc/react";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { daysBetweenDates, formatIndianDateFromDate } from "@/lib/utils";
+import { RouterOutputs, trpc } from "@/trpc/react";
+import { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, EditIcon, Trash2Icon } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import BookingDialog from "./booking-dialog";
 
 export const columns: ColumnDef<
   RouterOutputs["bookings"]["getBookingsInInterval"]["data"]["bookings"][0]
@@ -153,9 +153,14 @@ export const columns: ColumnDef<
         <Checkbox
           checked={row.original.isPaymentCollected}
           onCheckedChange={(checked) => {
-            updatePaymentCollected.mutate({
+            const promise = updatePaymentCollected.mutateAsync({
               id: row.original.id,
               isPaymentCollected: Boolean(checked),
+            });
+            toast.promise(promise, {
+              loading: "Updating payment status...",
+              success: "Payment status updated",
+              error: "Failed to update payment status",
             });
           }}
         />
@@ -205,7 +210,14 @@ export const columns: ColumnDef<
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive"
-                  onClick={() => deleteBooking.mutate(currentRow.id)}
+                  onClick={() => {
+                    const promise = deleteBooking.mutateAsync(currentRow.id);
+                    toast.promise(promise, {
+                      loading: "Deleting booking...",
+                      success: "Booking deleted",
+                      error: "Failed to delete booking",
+                    });
+                  }}
                 >
                   Delete
                 </AlertDialogAction>

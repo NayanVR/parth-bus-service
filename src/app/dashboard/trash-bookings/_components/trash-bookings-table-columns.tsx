@@ -150,7 +150,12 @@ export const columns: ColumnDef<
             className="cursor-pointer text-green-700"
             size={20}
             onClick={() => {
-              restoreBooking.mutate(currentRow.id);
+              const promise = restoreBooking.mutateAsync(currentRow.id);
+              toast.promise(promise, {
+                loading: "Restoring booking...",
+                success: "Booking restored",
+                error: "Failed to restore booking",
+              });
             }}
           />
           <AlertDialog>
@@ -169,7 +174,14 @@ export const columns: ColumnDef<
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive"
-                  onClick={() => deleteBooking.mutate(currentRow.id)}
+                  onClick={() => {
+                    const promise = deleteBooking.mutateAsync(currentRow.id);
+                    toast.promise(promise, {
+                      loading: "Deleting booking permanently...",
+                      success: "Booking deleted permanently",
+                      error: "Failed to delete booking",
+                    });
+                  }}
                 >
                   Delete
                 </AlertDialogAction>

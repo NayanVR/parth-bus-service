@@ -13,6 +13,7 @@ import { toFormikValidate } from "zod-formik-adapter";
 import { RouterOutputs, trpc } from "@/trpc/react";
 import { InsertVehicle } from "@/server/db/schema";
 import { createVehicleSchema } from "@/lib/types/vehicle-schema";
+import { toast } from "sonner";
 
 type Props = {
   isOpen: boolean;
@@ -47,15 +48,27 @@ export default function VehicleDialog({
     validate: toFormikValidate(createVehicleSchema),
     onSubmit: async (values) => {
       if (isEdit) {
-        const res = await updateVehicle.mutateAsync({
+        const promise = updateVehicle.mutateAsync({
           id: data?.id ?? 0,
           ...values,
         });
+        toast.promise(promise, {
+          loading: "Updating vehicle...",
+          success: "Vehicle updated successfully",
+          error: "Failed to update vehicle",
+        });
+        const res = await promise;
         if (res.status === "success") {
           setIsOpen(false);
         }
       } else {
-        const res = await createVehicle.mutateAsync(values);
+        const promise = createVehicle.mutateAsync(values);
+        toast.promise(promise, {
+          loading: "Creating vehicle...",
+          success: "Vehicle created successfully",
+          error: "Failed to create vehicle",
+        });
+        const res = await promise;
         if (res.status === "success") {
           setIsOpen(false);
         }
