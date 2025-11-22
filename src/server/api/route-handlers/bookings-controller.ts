@@ -27,6 +27,14 @@ export const createVehicleBookingHandler = async ({ ctx, input }: { ctx: TRPCCon
             }).returning();
             logger.info({ voucherId: voucherInfo[0]?.id }, "Voucher info inserted");
 
+            // Verify insertion
+            const verifyBooking = await tx.select().from(bookingsTable).where(eq(bookingsTable.id, bookingInfo.at(0)!.id));
+            if (verifyBooking.length > 0) {
+                logger.info({ bookingId: verifyBooking[0]?.id }, "Verification: Booking found in transaction");
+            } else {
+                logger.error({ bookingId: bookingInfo.at(0)!.id }, "Verification: Booking NOT found in transaction!");
+            }
+
             return { ...bookingInfo.at(0)!, ...clientInfo.at(0)!, id: bookingInfo.at(0)!.id, voucherId: voucherInfo.at(0)!.id };
         });
 

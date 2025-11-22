@@ -1,4 +1,4 @@
-import { integer, pgEnum, pgTable, real, serial, text, timestamp, uuid, bigint, boolean } from 'drizzle-orm/pg-core';
+import { bigint, boolean, integer, pgEnum, pgTable, real, serial, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 const xMetadata = {
   createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).defaultNow().notNull(),
@@ -21,8 +21,8 @@ export const usersTable = pgTable('users', {
 
 export const bookingsTable = pgTable('bookings', {
   ...metadata,
-  clientId: serial('client_id').notNull().references(() => clientInfoTable.id),
-  vehicleId: serial('vehicle_id').notNull().references(() => vehiclesTable.id, { onDelete: "cascade" }),
+  clientId: integer('client_id').notNull().references(() => clientInfoTable.id),
+  vehicleId: integer('vehicle_id').notNull().references(() => vehiclesTable.id, { onDelete: "cascade" }),
   travelPlaceFrom: text('travel_place_from').notNull(),
   travelPlaceTo: text('travel_place_to').notNull(),
   travelDateFrom: timestamp('travel_date_from', { mode: 'date', withTimezone: true }).notNull(),
@@ -41,9 +41,9 @@ export const bookingsTable = pgTable('bookings', {
 export const driverDutyVouchersTable = pgTable('driver_duty_vouchers', {
   ...xMetadata,
   id: uuid('id').primaryKey().defaultRandom(),
-  clientId: serial('client_id').notNull().references(() => clientInfoTable.id),
-  bookingId: serial('booking_id').notNull().references(() => bookingsTable.id, { onDelete: "cascade" }),
-  vehicleId: serial('vehicle_id').notNull().references(() => vehiclesTable.id, { onDelete: "cascade" }),
+  clientId: integer('client_id').notNull().references(() => clientInfoTable.id),
+  bookingId: integer('booking_id').notNull().references(() => bookingsTable.id, { onDelete: "cascade" }),
+  vehicleId: integer('vehicle_id').notNull().references(() => vehiclesTable.id, { onDelete: "cascade" }),
   driverName: text('driver_name').notNull(),
   driverExpense: real('driver_expense').notNull().default(0),
   odometerStart: real('odometer_start').notNull().default(0),
@@ -65,7 +65,7 @@ export const clientInfoTable = pgTable('client_info', {
 
 export const maintenanceTable = pgTable('maintenance', {
   ...metadata,
-  vehicleId: serial('vehicle_id').notNull().references(() => vehiclesTable.id, { onDelete: "cascade" }),
+  vehicleId: integer('vehicle_id').notNull().references(() => vehiclesTable.id, { onDelete: "cascade" }),
   maintenanceCost: real('maintenance_cost').notNull().default(0),
   maintenanceDateFrom: timestamp('maintenance_date_from', { mode: 'date', withTimezone: true }).notNull(),
   maintenanceDateTo: timestamp('maintenance_date_to', { mode: 'date', withTimezone: true }).notNull(),

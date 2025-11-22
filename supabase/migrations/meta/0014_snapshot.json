@@ -28,13 +28,13 @@
         },
         "client_id": {
           "name": "client_id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
         "vehicle_id": {
           "name": "vehicle_id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -76,6 +76,18 @@
           "notNull": true,
           "default": "now()"
         },
+        "estimated_kms": {
+          "name": "estimated_kms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cost_per_km": {
+          "name": "cost_per_km",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
         "estimated_cost": {
           "name": "estimated_cost",
           "type": "real",
@@ -89,6 +101,27 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        },
+        "remaining_payment": {
+          "name": "remaining_payment",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "is_payment_collected": {
+          "name": "is_payment_collected",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_deleted": {
+          "name": "is_deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         }
       },
       "indexes": {},
@@ -210,19 +243,19 @@
         },
         "client_id": {
           "name": "client_id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
         "booking_id": {
           "name": "booking_id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
         "vehicle_id": {
           "name": "vehicle_id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -260,11 +293,32 @@
           "notNull": true,
           "default": 0
         },
+        "toll_taxes": {
+          "name": "toll_taxes",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "additional_expenses": {
+          "name": "additional_expenses",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
         "remarks": {
           "name": "remarks",
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "is_deleted": {
+          "name": "is_deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         }
       },
       "indexes": {},
@@ -341,7 +395,7 @@
         },
         "vehicle_id": {
           "name": "vehicle_id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -370,6 +424,19 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        },
+        "remarks": {
+          "name": "remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_deleted": {
+          "name": "is_deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         }
       },
       "indexes": {},
@@ -490,6 +557,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "is_deleted": {
+          "name": "is_deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         }
       },
       "indexes": {},
@@ -525,8 +599,8 @@
     "tables": {},
     "columns": {}
   },
-  "id": "bb042d24-c859-40bb-a8a5-c5e65a70b227",
-  "prevId": "fe39f7dc-85fe-43bf-9aa8-a66845fd572a",
+  "id": "1400df7a-6fd2-48c7-89b5-e0fb057983ea",
+  "prevId": "dce5c21b-0e0b-4caa-b4ba-7d078fe5fb2d",
   "sequences": {},
   "policies": {},
   "views": {},

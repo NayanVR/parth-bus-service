@@ -1,7 +1,5 @@
 {
-  "id": "12467aea-7403-42b8-85b8-a95719cb66f1",
-  "prevId": "e7a43d0d-d34f-450e-af7b-86ff9574ccff",
-  "version": "6",
+  "version": "7",
   "dialect": "postgresql",
   "tables": {
     "public.bookings": {
@@ -124,32 +122,35 @@
         "bookings_client_id_client_info_id_fk": {
           "name": "bookings_client_id_client_info_id_fk",
           "tableFrom": "bookings",
-          "tableTo": "client_info",
           "columnsFrom": [
             "client_id"
           ],
+          "tableTo": "client_info",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "bookings_vehicle_id_vehicles_id_fk": {
           "name": "bookings_vehicle_id_vehicles_id_fk",
           "tableFrom": "bookings",
-          "tableTo": "vehicles",
           "columnsFrom": [
             "vehicle_id"
           ],
+          "tableTo": "vehicles",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
     "public.client_info": {
       "name": "client_info",
@@ -203,7 +204,10 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
     "public.driver_duty_vouchers": {
       "name": "driver_duty_vouchers",
@@ -315,45 +319,48 @@
         "driver_duty_vouchers_client_id_client_info_id_fk": {
           "name": "driver_duty_vouchers_client_id_client_info_id_fk",
           "tableFrom": "driver_duty_vouchers",
-          "tableTo": "client_info",
           "columnsFrom": [
             "client_id"
           ],
+          "tableTo": "client_info",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "driver_duty_vouchers_booking_id_bookings_id_fk": {
           "name": "driver_duty_vouchers_booking_id_bookings_id_fk",
           "tableFrom": "driver_duty_vouchers",
-          "tableTo": "bookings",
           "columnsFrom": [
             "booking_id"
           ],
+          "tableTo": "bookings",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "driver_duty_vouchers_vehicle_id_vehicles_id_fk": {
           "name": "driver_duty_vouchers_vehicle_id_vehicles_id_fk",
           "tableFrom": "driver_duty_vouchers",
-          "tableTo": "vehicles",
           "columnsFrom": [
             "vehicle_id"
           ],
+          "tableTo": "vehicles",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
     "public.maintenance": {
       "name": "maintenance",
@@ -430,19 +437,22 @@
         "maintenance_vehicle_id_vehicles_id_fk": {
           "name": "maintenance_vehicle_id_vehicles_id_fk",
           "tableFrom": "maintenance",
-          "tableTo": "vehicles",
           "columnsFrom": [
             "vehicle_id"
           ],
+          "tableTo": "vehicles",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
     "public.users": {
       "name": "users",
@@ -495,12 +505,15 @@
       "uniqueConstraints": {
         "users_email_unique": {
           "name": "users_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
-      }
+      },
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
     "public.vehicles": {
       "name": "vehicles",
@@ -552,12 +565,15 @@
       "uniqueConstraints": {
         "vehicles_plate_number_unique": {
           "name": "vehicles_plate_number_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "plate_number"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
-      }
+      },
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     }
   },
   "enums": {
@@ -572,8 +588,14 @@
   },
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "12467aea-7403-42b8-85b8-a95719cb66f1",
+  "prevId": "e7a43d0d-d34f-450e-af7b-86ff9574ccff",
+  "sequences": {},
+  "policies": {},
+  "views": {},
+  "roles": {}
 }

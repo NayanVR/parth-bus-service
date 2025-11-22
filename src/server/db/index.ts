@@ -18,6 +18,10 @@ const conn = globalForDb.conn ?? postgres({
   user: env.DB_USER,
   password: env.DB_PASSWORD,
   database: env.DB_NAME,
+  prepare: false, // Disable prepared statements for Supabase Transaction Mode compatibility
+  max: 1, // Limit connections per lambda to prevent exhaustion
+  idle_timeout: 20, // Close idle connections quickly
+  connect_timeout: 10, // Fail fast if connection hangs
 });
 
 if (env.NODE_ENV !== "production") globalForDb.conn = conn;
