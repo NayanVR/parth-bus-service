@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
@@ -45,6 +46,21 @@ export const createCallerFactory = t.createCallerFactory;
  */
 export const createTRPCRouter = t.router;
 
+const loggerMiddleware = t.middleware(async ({ path, type, next, getRawInput }) => {
+  const start = Date.now();
+  const result = await next();
+  const durationMs = Date.now() - start;
+  const rawInput = await getRawInput();
+
+  if (result.ok) {
+    logger.info({ path, type, durationMs, input: rawInput }, "tRPC Request Success");
+  } else {
+    logger.error({ path, type, durationMs, input: rawInput, error: result.error }, "tRPC Request Failed");
+  }
+
+  return result;
+});
+
 /**
  * Public (unauthenticated) procedure
  *
@@ -52,7 +68,7 @@ export const createTRPCRouter = t.router;
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
-export const publicProcedure = t.procedure;
+export const publicProcedure = t.procedure.use(loggerMiddleware);
 
 const isAuthed = t.middleware(({ next, ctx }) => {
   if (!ctx.user) {
@@ -64,4 +80,4 @@ const isAuthed = t.middleware(({ next, ctx }) => {
   return next();
 });
 
-export const protectedProcedure = t.procedure.use(isAuthed);
+export const protectedProcedure = t.procedure.use(loggerMiddleware).use(isAuthed);

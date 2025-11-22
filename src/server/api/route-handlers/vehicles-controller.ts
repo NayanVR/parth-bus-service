@@ -1,9 +1,10 @@
-import { bookingsTable, maintenanceTable, vehiclesTable } from "@/server/db/schema";
-import { TRPCContext } from "../trpc-context";
-import { TRPCError } from "@trpc/server";
+import logger from "@/lib/logger";
 import { CreateVehicleInput, UpdateVehicleInput, VehicleOccupiedDatesInput } from "@/lib/types/vehicle-schema";
-import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { optimizeDateRanges } from "@/lib/utils";
+import { bookingsTable, maintenanceTable, vehiclesTable } from "@/server/db/schema";
+import { TRPCError } from "@trpc/server";
+import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { TRPCContext } from "../trpc-context";
 
 export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPCContext, input: VehicleOccupiedDatesInput }) {
     try {
@@ -46,6 +47,7 @@ export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPC
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "getVehicleOccupiedDatesHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,
@@ -63,6 +65,7 @@ export async function getAllVehiclesHandler({ ctx }: { ctx: TRPCContext }) {
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "getAllVehiclesHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,
@@ -80,6 +83,7 @@ export async function createVehicleHandler({ ctx, input }: { ctx: TRPCContext, i
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "createVehicleHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,
@@ -97,6 +101,7 @@ export async function updateVehicleHandler({ ctx, input }: { ctx: TRPCContext, i
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "updateVehicleHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,
@@ -114,6 +119,7 @@ export async function deleteVehicleHandler({ ctx, input: id }: { ctx: TRPCContex
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "deleteVehicleHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,

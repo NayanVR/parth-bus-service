@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { BookingsSchemaInput, GetBookingsInIntervalSchemaInput, UpdateBookingSchemaInput } from "@/lib/types/bookings-schema";
 import { bookingsTable, clientInfoTable, driverDutyVouchersTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
@@ -5,14 +6,18 @@ import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { TRPCContext } from "../trpc-context";
 
 export const createVehicleBookingHandler = async ({ ctx, input }: { ctx: TRPCContext, input: BookingsSchemaInput }) => {
+    logger.info({ input }, "createVehicleBookingHandler called");
     try {
         const res = await ctx.db.transaction(async (tx) => {
+            logger.info("Starting transaction for booking creation");
             const clientInfo = await tx.insert(clientInfoTable).values(input).returning();
+            logger.info({ clientId: clientInfo[0]?.id }, "Client info inserted");
 
             const bookingInfo = await tx.insert(bookingsTable).values({
                 ...input,
                 clientId: clientInfo.at(0)!.id,
             }).returning();
+            logger.info({ bookingId: bookingInfo[0]?.id }, "Booking info inserted");
 
             const voucherInfo = await tx.insert(driverDutyVouchersTable).values({
                 clientId: clientInfo.at(0)!.id,
@@ -20,10 +25,12 @@ export const createVehicleBookingHandler = async ({ ctx, input }: { ctx: TRPCCon
                 driverName: "",
                 vehicleId: input.vehicleId,
             }).returning();
+            logger.info({ voucherId: voucherInfo[0]?.id }, "Voucher info inserted");
 
             return { ...bookingInfo.at(0)!, ...clientInfo.at(0)!, id: bookingInfo.at(0)!.id, voucherId: voucherInfo.at(0)!.id };
         });
 
+        logger.info("Transaction successful, returning result");
         return {
             status: 'success',
             data: {
@@ -31,7 +38,7 @@ export const createVehicleBookingHandler = async ({ ctx, input }: { ctx: TRPCCon
             },
         };
     } catch (err: any) {
-        console.error("Database transaction failed:", err);
+        logger.error({ err }, "Database transaction failed");
 
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
@@ -62,7 +69,7 @@ export const getBookingsInIntervalHandler = async ({ ctx, input }: { ctx: TRPCCo
         };
     }
     catch (err: any) {
-        console.error("Database transaction failed:", err);
+        logger.error({ err }, "Database transaction failed");
 
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
@@ -97,7 +104,7 @@ export const updateBookingHandler = async ({ ctx, input }: { ctx: TRPCContext, i
             },
         };
     } catch (err: any) {
-        console.error("Database transaction failed:", err);
+        logger.error({ err }, "Database transaction failed");
 
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
@@ -117,7 +124,7 @@ export const updatePaymentCollectedHandler = async ({ ctx, input }: { ctx: TRPCC
             },
         };
     } catch (err: any) {
-        console.error("Database transaction failed:", err);
+        logger.error({ err }, "Database transaction failed");
 
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
@@ -141,7 +148,7 @@ export const deleteBookingHandler = async ({ ctx, input: id }: { ctx: TRPCContex
             },
         };
     } catch (err: any) {
-        console.error("Database transaction failed:", err);
+        logger.error({ err }, "Database transaction failed");
 
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',

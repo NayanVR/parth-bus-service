@@ -1,7 +1,8 @@
+import logger from "@/lib/logger";
 import { bookingsTable, clientInfoTable, driverDutyVouchersTable } from "@/server/db/schema";
-import { TRPCContext } from "../trpc-context";
-import { eq, and, lte, gte } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { and, eq, gte, lte } from "drizzle-orm";
+import { TRPCContext } from "../trpc-context";
 
 export const getTrashBookingsInIntervalHandler = async ({ ctx, input }: { ctx: TRPCContext, input: { from: Date, to: Date } }) => {
     try {
@@ -24,6 +25,7 @@ export const getTrashBookingsInIntervalHandler = async ({ ctx, input }: { ctx: T
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "getTrashBookingsInIntervalHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,
@@ -46,6 +48,7 @@ export const restoreBookingHandler = async ({ ctx, input: id }: { ctx: TRPCConte
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "restoreBookingHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,
@@ -68,6 +71,7 @@ export const permanentDeleteBookingHandler = async ({ ctx, input: id }: { ctx: T
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "permanentDeleteBookingHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,

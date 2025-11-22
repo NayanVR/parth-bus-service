@@ -1,12 +1,13 @@
-import { CreateUserInput, LoginUserInput } from 'src/lib/types/user-schema';
-import { TRPCError } from '@trpc/server';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
 import { env } from '@/env';
-import { TRPCContext } from '../trpc-context';
+import logger from '@/lib/logger';
+import { CreateUserInput, LoginUserInput } from '@/lib/types/user-schema';
 import { usersTable } from '@/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { TRPCError } from '@trpc/server';
 import bcrypt from "bcrypt";
+import { eq } from 'drizzle-orm';
+import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
+import { TRPCContext } from '../trpc-context';
 
 export const registerHandler = async ({ ctx, input }: { ctx: TRPCContext, input: CreateUserInput }) => {
     try {
@@ -27,6 +28,7 @@ export const registerHandler = async ({ ctx, input }: { ctx: TRPCContext, input:
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "Register failed");
         if (err.code === 'P2002') {
             throw new TRPCError({
                 code: 'CONFLICT',
@@ -76,6 +78,7 @@ export const loginHandler = async ({ ctx, input }: { ctx: TRPCContext, input: Lo
             token,
         };
     } catch (err: any) {
+        logger.error({ err }, "Login failed");
         throw err;
     }
 }
@@ -87,6 +90,7 @@ export const logoutHandler = async () => {
         });
         return { status: 'success' };
     } catch (err: any) {
+        logger.error({ err }, "Logout failed");
         throw err;
     }
 };

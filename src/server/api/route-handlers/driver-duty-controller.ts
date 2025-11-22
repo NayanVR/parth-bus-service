@@ -1,8 +1,9 @@
+import logger from "@/lib/logger";
 import { GetDriverDutyVouchersInIntervalInput, UpdateDriverDutyVoucherInput } from "@/lib/types/driver-duty-schema";
-import { TRPCContext } from "../trpc-context";
 import { bookingsTable, clientInfoTable, driverDutyVouchersTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { TRPCContext } from "../trpc-context";
 
 export const getDriverDutyVoucherByIdHandler = async ({ ctx, input: id }: { ctx: TRPCContext, input: string }) => {
     try {
@@ -39,6 +40,7 @@ export const getDriverDutyVoucherByIdHandler = async ({ ctx, input: id }: { ctx:
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "getDriverDutyVoucherByIdHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,
@@ -66,6 +68,7 @@ export const getDriverDutyVouchersInIntervalHandler = async ({ ctx, input }: { c
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "getDriverDutyVouchersInIntervalHandler failed");
         throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: err.message
@@ -121,6 +124,7 @@ export const updateDriverDutyVoucherHandler = async ({ ctx, input }: { ctx: TRPC
         //     };
         // }
     } catch (err: any) {
+        logger.error({ err }, "updateDriverDutyVoucherHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,
@@ -143,6 +147,7 @@ export const deleteDriverDutyVoucherHandler = async ({ ctx, input: id }: { ctx: 
             }
         };
     } catch (err: any) {
+        logger.error({ err }, "deleteDriverDutyVoucherHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,

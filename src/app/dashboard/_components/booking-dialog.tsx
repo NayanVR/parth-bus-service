@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,14 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useFormik } from "formik";
-import { toFormikValidate } from "zod-formik-adapter";
-import {
-  bookingsSchema,
-  BookingsSchemaInput,
-} from "@/lib/types/bookings-schema";
 import {
   Select,
   SelectContent,
@@ -27,11 +14,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DatePicker } from "@/components/ui/date-picker";
-import { RouterOutputs, trpc } from "@/trpc/react";
-import { daysBetweenDates, formatDateToInput } from "@/lib/utils";
-import { toast } from "sonner";
 import { BookingsDataRangeContext } from "@/lib/contexts";
+import {
+  bookingsSchema,
+  BookingsSchemaInput,
+} from "@/lib/types/bookings-schema";
+import { daysBetweenDates, formatDateToInput } from "@/lib/utils";
+import { RouterOutputs, trpc } from "@/trpc/react";
+import { useFormik } from "formik";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { toFormikValidate } from "zod-formik-adapter";
 
 type Props = {
   isOpen: boolean;
@@ -58,7 +51,12 @@ export default function BookingDialog({
 
   const createBooking = trpc.bookings.createVehicleBooking.useMutation({
     onSuccess: (res) => {
+      console.log("Booking created successfully:", res);
       trpcUtils.bookings.getBookingsInInterval.refetch();
+    },
+    onError: (error) => {
+      console.error("Failed to create booking:", error);
+      toast.error(`Failed to create booking: ${error.message}`);
     },
   });
   const updateBooking = trpc.bookings.updateVehicleBooking.useMutation({
@@ -88,10 +86,12 @@ export default function BookingDialog({
     } satisfies BookingsSchemaInput,
     validate: toFormikValidate(bookingsSchema),
     onSubmit: async (values) => {
+      console.log("Form submitted with values:", values);
       if (
         checkOccupancy(values.travelDateFrom) ||
         checkOccupancy(values.travelDateTo)
       ) {
+        console.warn("Vehicle occupancy check failed");
         toast.error("Vehicle is not available for the selected dates");
         return;
       }
@@ -106,24 +106,33 @@ export default function BookingDialog({
         values.costPerKm = null;
       }
 
-      if (isEdit) {
-        if (data === undefined) {
-          toast.error("Something went wrong");
-          return;
+      try {
+        if (isEdit) {
+          if (data === undefined) {
+            toast.error("Something went wrong");
+            return;
+          }
+          console.log("Updating booking...");
+          const res = await updateBooking.mutateAsync({
+            id: data?.id ?? 0,
+            clientId: data?.clientId ?? 0,
+            ...values,
+          });
+          console.log("Update response:", res);
+          if (res.status === "success") {
+            setIsOpen(false);
+          }
+        } else {
+          console.log("Creating booking...");
+          const res = await createBooking.mutateAsync(values);
+          console.log("Create response:", res);
+          if (res.status === "success") {
+            setIsOpen(false);
+          }
         }
-        const res = await updateBooking.mutateAsync({
-          id: data?.id ?? 0,
-          clientId: data?.clientId ?? 0,
-          ...values,
-        });
-        if (res.status === "success") {
-          setIsOpen(false);
-        }
-      } else {
-        const res = await createBooking.mutateAsync(values);
-        if (res.status === "success") {
-          setIsOpen(false);
-        }
+      } catch (error) {
+        console.error("Error in form submission:", error);
+        // Error is already handled by onError in mutation, but good to log here too
       }
     },
   });
@@ -517,7 +526,11 @@ export default function BookingDialog({
           </div>
           <DialogFooter>
             <Button
-              disabled={formik.isSubmitting}
+              disabled={
+                formik.isSubmitting ||
+                createBooking.isPending ||
+                updateBooking.isPending
+              }
               className="mt-8"
               type="submit"
             >

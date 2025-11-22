@@ -1,7 +1,8 @@
+import logger from "@/lib/logger";
 import { vehiclesTable } from "@/server/db/schema";
+import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { TRPCContext } from "../trpc-context";
-import { TRPCError } from "@trpc/server";
 
 export async function getTrashVehiclesHandler({ ctx }: { ctx: TRPCContext }) {
     try {
@@ -13,6 +14,7 @@ export async function getTrashVehiclesHandler({ ctx }: { ctx: TRPCContext }) {
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "getTrashVehiclesHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,
@@ -30,6 +32,7 @@ export async function restoreVehicleHandler({ ctx, input: id }: { ctx: TRPCConte
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "restoreVehicleHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,
@@ -47,6 +50,7 @@ export async function permanentDeleteVehicleHandler({ ctx, input: id }: { ctx: T
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "permanentDeleteVehicleHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,

@@ -1,18 +1,18 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { BookingsDataTable } from "./_components/bookings-table";
-import { columns } from "./_components/bookings-table-columns";
-import { trpc } from "@/trpc/react";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Skeleton } from "@/components/ui/skeleton";
 import { BookingsDataRangeContext } from "@/lib/contexts";
-import { CSVLink } from "react-csv";
 import {
   formatIndianDateFromDate,
-  getDefaultStartDate,
   getDefaultEndDate,
+  getDefaultStartDate,
 } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/trpc/react";
+import { useMemo, useState } from "react";
+import { CSVLink } from "react-csv";
+import { BookingsDataTable } from "./_components/bookings-table";
+import { columns } from "./_components/bookings-table-columns";
 
 type Props = {};
 
@@ -78,7 +78,11 @@ export default function Dashboard(props: Props) {
             <DatePicker
               date={to}
               setDate={(date) => {
-                if (date && date >= from) setTo(date);
+                if (date && date >= from) {
+                  const endOfDay = new Date(date);
+                  endOfDay.setHours(23, 59, 59, 999);
+                  setTo(endOfDay);
+                }
               }}
             />
           </div>

@@ -3,11 +3,12 @@
 // updateMaintenance: protectedProcedure.input(updateMaintenanceSchema).mutation(updateMaintenanceHandler),
 // deleteMaintenance: protectedProcedure.input(z.number()).mutation(deleteMaintenanceHandler),
 
+import logger from "@/lib/logger";
 import { GetMaintenancesInIntervalInput, MaintenanceInput, UpdateMaintenanceInput } from "@/lib/types/maintenance-schema";
-import { TRPCContext } from "../trpc-context";
 import { maintenanceTable } from "@/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { TRPCContext } from "../trpc-context";
 
 export const createMaintenanceHandler = async ({ ctx, input }: { ctx: TRPCContext, input: MaintenanceInput }) => {
     try {
@@ -19,6 +20,7 @@ export const createMaintenanceHandler = async ({ ctx, input }: { ctx: TRPCContex
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "createMaintenanceHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,
@@ -44,6 +46,7 @@ export const getMaintenancesInIntervalHandler = async ({ ctx, input }: { ctx: TR
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "getMaintenancesInIntervalHandler failed");
         throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: err.message
@@ -61,6 +64,7 @@ export const updateMaintenanceHandler = async ({ ctx, input }: { ctx: TRPCContex
             },
         };
     } catch (err: any) {
+        logger.error({ err }, "updateMaintenanceHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,
@@ -75,6 +79,7 @@ export const deleteMaintenanceHandler = async ({ ctx, input: id }: { ctx: TRPCCo
             status: 'success',
         };
     } catch (err: any) {
+        logger.error({ err }, "deleteMaintenanceHandler failed");
         throw new TRPCError({
             code: 'INTERNAL_SERVER_ERROR',
             message: err.message,

@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -65,5 +65,7 @@ export function getDefaultStartDate() {
 }
 
 export function getDefaultEndDate() {
-  return new Date(new Date().getFullYear(), 11, 31);
+  const date = new Date(new Date().getFullYear(), 11, 31);
+  date.setHours(23, 59, 59, 999);
+  return date;
 }
