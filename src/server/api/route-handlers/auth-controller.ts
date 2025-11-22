@@ -10,6 +10,7 @@ import { cookies } from 'next/headers';
 import { TRPCContext } from '../trpc-context';
 
 export const registerHandler = async ({ ctx, input }: { ctx: TRPCContext, input: CreateUserInput }) => {
+    logger.info({ input: { email: input.email } }, "registerHandler called");
     try {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(input.password, saltRounds);
@@ -18,6 +19,8 @@ export const registerHandler = async ({ ctx, input }: { ctx: TRPCContext, input:
             email: input.email,
             password: hashedPassword,
         }).returning()).at(0);
+
+        logger.info({ userId: res?.id }, "User registered successfully");
 
         return {
             status: 'success',
@@ -40,10 +43,12 @@ export const registerHandler = async ({ ctx, input }: { ctx: TRPCContext, input:
 }
 
 export const loginHandler = async ({ ctx, input }: { ctx: TRPCContext, input: LoginUserInput }) => {
+    logger.info({ email: input.email }, "loginHandler called");
     try {
         const user = (await ctx.db.select().from(usersTable).where(eq(usersTable.email, input.email))).at(0);
 
         if (!user) {
+            logger.warn({ email: input.email }, "Login failed: Email does not exist");
             throw new TRPCError({
                 code: 'BAD_REQUEST',
                 message: 'Email does not exist',
@@ -53,6 +58,7 @@ export const loginHandler = async ({ ctx, input }: { ctx: TRPCContext, input: Lo
         const validPassword = await bcrypt.compare(input.password, user.password);
 
         if (!validPassword) {
+            logger.warn({ email: input.email }, "Login failed: Invalid password");
             throw new TRPCError({
                 code: 'BAD_REQUEST',
                 message: 'Invalid password',
@@ -73,6 +79,8 @@ export const loginHandler = async ({ ctx, input }: { ctx: TRPCContext, input: Lo
 
         cookies().set('token', token, cookieOptions);
 
+        logger.info({ userId: user.id }, "Login successful");
+
         return {
             status: 'success',
             token,
@@ -84,10 +92,12 @@ export const loginHandler = async ({ ctx, input }: { ctx: TRPCContext, input: Lo
 }
 
 export const logoutHandler = async () => {
+    logger.info("logoutHandler called");
     try {
         cookies().set('token', '', {
             maxAge: -1,
         });
+        logger.info("Logout successful");
         return { status: 'success' };
     } catch (err: any) {
         logger.error({ err }, "Logout failed");

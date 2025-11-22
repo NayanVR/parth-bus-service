@@ -5,6 +5,7 @@ import { and, eq, gte, lte } from "drizzle-orm";
 import { TRPCContext } from "../trpc-context";
 
 export const getTrashMaintenancesInIntervalHandler = async ({ ctx, input }: { ctx: TRPCContext, input: { from: Date, to: Date } }) => {
+    logger.info({ input }, "getTrashMaintenancesInIntervalHandler called");
     try {
         const res = await ctx.db
             .select()
@@ -14,6 +15,8 @@ export const getTrashMaintenancesInIntervalHandler = async ({ ctx, input }: { ct
                 gte(maintenanceTable.maintenanceDateFrom, input.from),
                 lte(maintenanceTable.maintenanceDateTo, input.to)
             ));
+
+        logger.info({ count: res.length }, "getTrashMaintenancesInIntervalHandler success");
         return {
             status: 'success',
             data: {
@@ -30,8 +33,10 @@ export const getTrashMaintenancesInIntervalHandler = async ({ ctx, input }: { ct
 }
 
 export const restoreMaintenanceHandler = async ({ ctx, input: id }: { ctx: TRPCContext, input: number }) => {
+    logger.info({ id }, "restoreMaintenanceHandler called");
     try {
         const res = await ctx.db.update(maintenanceTable).set({ isDeleted: false }).where(eq(maintenanceTable.id, id)).returning();
+        logger.info({ maintenanceId: res[0]?.id }, "restoreMaintenanceHandler success");
         return {
             status: 'success',
             data: {
@@ -48,8 +53,10 @@ export const restoreMaintenanceHandler = async ({ ctx, input: id }: { ctx: TRPCC
 }
 
 export const permanentDeleteMaintenanceHandler = async ({ ctx, input: id }: { ctx: TRPCContext, input: number }) => {
+    logger.info({ id }, "permanentDeleteMaintenanceHandler called");
     try {
         await ctx.db.delete(maintenanceTable).where(eq(maintenanceTable.id, id));
+        logger.info({ id }, "permanentDeleteMaintenanceHandler success");
         return {
             status: 'success',
         };

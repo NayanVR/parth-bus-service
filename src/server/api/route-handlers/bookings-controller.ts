@@ -49,6 +49,7 @@ export const createVehicleBookingHandler = async ({ ctx, input }: { ctx: TRPCCon
 };
 
 export const getBookingsInIntervalHandler = async ({ ctx, input }: { ctx: TRPCContext, input: GetBookingsInIntervalSchemaInput }) => {
+    logger.info({ input }, "getBookingsInIntervalHandler called");
     try {
         const res = await ctx.db.
             select().
@@ -61,6 +62,8 @@ export const getBookingsInIntervalHandler = async ({ ctx, input }: { ctx: TRPCCo
             .innerJoin(clientInfoTable, eq(bookingsTable.clientId, clientInfoTable.id))
             .innerJoin(driverDutyVouchersTable, eq(bookingsTable.clientId, driverDutyVouchersTable.clientId))
             .orderBy(desc(bookingsTable.bookingDate));
+
+        logger.info({ count: res.length }, "getBookingsInIntervalHandler success");
         return {
             status: 'success',
             data: {
@@ -80,8 +83,10 @@ export const getBookingsInIntervalHandler = async ({ ctx, input }: { ctx: TRPCCo
 }
 
 export const updateBookingHandler = async ({ ctx, input }: { ctx: TRPCContext, input: UpdateBookingSchemaInput }) => {
+    logger.info({ input }, "updateBookingHandler called");
     try {
         const res = await ctx.db.transaction(async (tx) => {
+            logger.info("Updating client info...");
             const clientInfo = await tx.update(clientInfoTable).set({
                 clientName: input.clientName,
                 clientAddress: input.clientAddress,
@@ -89,14 +94,18 @@ export const updateBookingHandler = async ({ ctx, input }: { ctx: TRPCContext, i
                 clientAltPhone: input.clientAltPhone,
             }).where(eq(clientInfoTable.id, input.clientId)).returning();
 
+            logger.info("Updating booking info...");
             const bookingInfo = await tx.update(bookingsTable).set(input).where(eq(bookingsTable.id, input.id)).returning();
 
+            logger.info("Updating voucher info...");
             const voucherInfo = await tx.update(driverDutyVouchersTable).set({
                 vehicleId: input.vehicleId,
             }).where(eq(driverDutyVouchersTable.bookingId, input.id)).returning();
 
             return { ...bookingInfo.at(0)!, ...clientInfo.at(0)!, id: bookingInfo.at(0)!.id, voucherId: voucherInfo.at(0)!.id };
         });
+
+        logger.info({ bookingId: res.id }, "updateBookingHandler success");
         return {
             status: 'success',
             data: {
@@ -115,8 +124,10 @@ export const updateBookingHandler = async ({ ctx, input }: { ctx: TRPCContext, i
 }
 
 export const updatePaymentCollectedHandler = async ({ ctx, input }: { ctx: TRPCContext, input: { id: number, isPaymentCollected: boolean } }) => {
+    logger.info({ input }, "updatePaymentCollectedHandler called");
     try {
         const res = await ctx.db.update(bookingsTable).set({ isPaymentCollected: input.isPaymentCollected }).where(eq(bookingsTable.id, input.id)).returning();
+        logger.info({ bookingId: input.id, isPaymentCollected: input.isPaymentCollected }, "updatePaymentCollectedHandler success");
         return {
             status: 'success',
             data: {
@@ -135,12 +146,16 @@ export const updatePaymentCollectedHandler = async ({ ctx, input }: { ctx: TRPCC
 }
 
 export const deleteBookingHandler = async ({ ctx, input: id }: { ctx: TRPCContext, input: number }) => {
+    logger.info({ id }, "deleteBookingHandler called");
     try {
         const res = await ctx.db.transaction(async (tx) => {
+            logger.info("Soft deleting booking...");
             const booking = await tx.update(bookingsTable).set({ isDeleted: true }).where(eq(bookingsTable.id, id)).returning();
+            logger.info("Soft deleting voucher...");
             await tx.update(driverDutyVouchersTable).set({ isDeleted: true }).where(eq(driverDutyVouchersTable.bookingId, id));
             return booking.at(0);
         });
+        logger.info({ bookingId: id }, "deleteBookingHandler success");
         return {
             status: 'success',
             data: {

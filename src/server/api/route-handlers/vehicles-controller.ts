@@ -7,6 +7,7 @@ import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { TRPCContext } from "../trpc-context";
 
 export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPCContext, input: VehicleOccupiedDatesInput }) {
+    logger.info({ input }, "getVehicleOccupiedDatesHandler called");
     try {
         const res = await ctx.db.transaction(async (tx) => {
             const bookingsRes = await tx.select({
@@ -40,6 +41,7 @@ export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPC
 
         const optimizedDates = optimizeDateRanges(res);
 
+        logger.info({ count: optimizedDates.length }, "getVehicleOccupiedDatesHandler success");
         return {
             status: 'success',
             data: {
@@ -56,8 +58,10 @@ export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPC
 }
 
 export async function getAllVehiclesHandler({ ctx }: { ctx: TRPCContext }) {
+    logger.info("getAllVehiclesHandler called");
     try {
         const res = await ctx.db.select().from(vehiclesTable).where(eq(vehiclesTable.isDeleted, false)).orderBy(desc(vehiclesTable.createdAt));
+        logger.info({ count: res.length }, "getAllVehiclesHandler success");
         return {
             status: 'success',
             data: {
@@ -74,8 +78,10 @@ export async function getAllVehiclesHandler({ ctx }: { ctx: TRPCContext }) {
 }
 
 export async function createVehicleHandler({ ctx, input }: { ctx: TRPCContext, input: CreateVehicleInput }) {
+    logger.info({ input }, "createVehicleHandler called");
     try {
         const res = (await ctx.db.insert(vehiclesTable).values(input).returning()).at(0);
+        logger.info({ vehicleId: res?.id }, "createVehicleHandler success");
         return {
             status: 'success',
             data: {
@@ -92,8 +98,10 @@ export async function createVehicleHandler({ ctx, input }: { ctx: TRPCContext, i
 }
 
 export async function updateVehicleHandler({ ctx, input }: { ctx: TRPCContext, input: UpdateVehicleInput }) {
+    logger.info({ input }, "updateVehicleHandler called");
     try {
         const res = await ctx.db.update(vehiclesTable).set(input).where(eq(vehiclesTable.id, input.id)).returning();
+        logger.info({ vehicleId: res[0]?.id }, "updateVehicleHandler success");
         return {
             status: 'success',
             data: {
@@ -110,8 +118,10 @@ export async function updateVehicleHandler({ ctx, input }: { ctx: TRPCContext, i
 }
 
 export async function deleteVehicleHandler({ ctx, input: id }: { ctx: TRPCContext, input: number }) {
+    logger.info({ id }, "deleteVehicleHandler called");
     try {
         const res = await ctx.db.update(vehiclesTable).set({ isDeleted: true }).where(eq(vehiclesTable.id, id)).returning();
+        logger.info({ vehicleId: id }, "deleteVehicleHandler success");
         return {
             status: 'success',
             data: {

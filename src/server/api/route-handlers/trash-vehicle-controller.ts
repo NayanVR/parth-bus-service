@@ -5,8 +5,10 @@ import { eq } from "drizzle-orm";
 import { TRPCContext } from "../trpc-context";
 
 export async function getTrashVehiclesHandler({ ctx }: { ctx: TRPCContext }) {
+    logger.info("getTrashVehiclesHandler called");
     try {
         const res = await ctx.db.select().from(vehiclesTable).where(eq(vehiclesTable.isDeleted, true));
+        logger.info({ count: res.length }, "getTrashVehiclesHandler success");
         return {
             status: 'success',
             data: {
@@ -23,8 +25,10 @@ export async function getTrashVehiclesHandler({ ctx }: { ctx: TRPCContext }) {
 }
 
 export async function restoreVehicleHandler({ ctx, input: id }: { ctx: TRPCContext, input: number }) {
+    logger.info({ id }, "restoreVehicleHandler called");
     try {
         const res = await ctx.db.update(vehiclesTable).set({ isDeleted: false }).where(eq(vehiclesTable.id, id)).returning();
+        logger.info({ vehicleId: res[0]?.id }, "restoreVehicleHandler success");
         return {
             status: 'success',
             data: {
@@ -41,8 +45,10 @@ export async function restoreVehicleHandler({ ctx, input: id }: { ctx: TRPCConte
 }
 
 export async function permanentDeleteVehicleHandler({ ctx, input: id }: { ctx: TRPCContext, input: number }) {
+    logger.info({ id }, "permanentDeleteVehicleHandler called");
     try {
         const res = await ctx.db.delete(vehiclesTable).where(eq(vehiclesTable.id, id)).returning();
+        logger.info({ vehicleId: res[0]?.id }, "permanentDeleteVehicleHandler success");
         return {
             status: 'success',
             data: {

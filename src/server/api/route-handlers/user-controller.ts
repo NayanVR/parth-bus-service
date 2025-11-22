@@ -3,8 +3,10 @@ import { TRPCError } from '@trpc/server';
 import { TRPCContext } from '../trpc-context';
 
 export const getUserHandler = ({ ctx }: { ctx: TRPCContext }) => {
+    logger.info("getUserHandler called");
     try {
         const user = ctx.user;
+        logger.info({ email: user?.email }, "getUserHandler success");
         return {
             status: 'success',
             data: {

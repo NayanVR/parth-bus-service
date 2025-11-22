@@ -11,8 +11,10 @@ import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { TRPCContext } from "../trpc-context";
 
 export const createMaintenanceHandler = async ({ ctx, input }: { ctx: TRPCContext, input: MaintenanceInput }) => {
+    logger.info({ input }, "createMaintenanceHandler called");
     try {
         const res = (await ctx.db.insert(maintenanceTable).values(input).returning()).at(0);
+        logger.info({ maintenanceId: res?.id }, "createMaintenanceHandler success");
         return {
             status: 'success',
             data: {
@@ -29,6 +31,7 @@ export const createMaintenanceHandler = async ({ ctx, input }: { ctx: TRPCContex
 }
 
 export const getMaintenancesInIntervalHandler = async ({ ctx, input }: { ctx: TRPCContext, input: GetMaintenancesInIntervalInput }) => {
+    logger.info({ input }, "getMaintenancesInIntervalHandler called");
     try {
         const res = await ctx.db
             .select()
@@ -39,6 +42,8 @@ export const getMaintenancesInIntervalHandler = async ({ ctx, input }: { ctx: TR
                 lte(maintenanceTable.maintenanceDateTo, input.to)
             ))
             .orderBy(desc(maintenanceTable.createdAt));
+
+        logger.info({ count: res.length }, "getMaintenancesInIntervalHandler success");
         return {
             status: 'success',
             data: {
@@ -55,8 +60,10 @@ export const getMaintenancesInIntervalHandler = async ({ ctx, input }: { ctx: TR
 }
 
 export const updateMaintenanceHandler = async ({ ctx, input }: { ctx: TRPCContext, input: UpdateMaintenanceInput }) => {
+    logger.info({ input }, "updateMaintenanceHandler called");
     try {
         const res = await ctx.db.update(maintenanceTable).set(input).where(eq(maintenanceTable.id, input.id)).returning();
+        logger.info({ maintenanceId: res[0]?.id }, "updateMaintenanceHandler success");
         return {
             status: 'success',
             data: {
@@ -73,8 +80,10 @@ export const updateMaintenanceHandler = async ({ ctx, input }: { ctx: TRPCContex
 }
 
 export const deleteMaintenanceHandler = async ({ ctx, input: id }: { ctx: TRPCContext, input: number }) => {
+    logger.info({ id }, "deleteMaintenanceHandler called");
     try {
         await ctx.db.update(maintenanceTable).set({ isDeleted: true }).where(eq(maintenanceTable.id, id));
+        logger.info({ id }, "deleteMaintenanceHandler success");
         return {
             status: 'success',
         };

@@ -6,12 +6,14 @@ import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { TRPCContext } from "../trpc-context";
 
 export const getDriverDutyVoucherByIdHandler = async ({ ctx, input: id }: { ctx: TRPCContext, input: string }) => {
+    logger.info({ id }, "getDriverDutyVoucherByIdHandler called");
     try {
         const res = (await ctx.db.select().from(driverDutyVouchersTable)
             .where(and(eq(driverDutyVouchersTable.isDeleted, false), eq(driverDutyVouchersTable.id, id)))
             .innerJoin(clientInfoTable, eq(driverDutyVouchersTable.clientId, clientInfoTable.id))).at(0);
 
         if (!res) {
+            logger.warn({ id }, "Driver Duty Voucher not found");
             throw new TRPCError({
                 code: 'NOT_FOUND',
                 message: 'Driver Duty Voucher not found',
@@ -19,6 +21,7 @@ export const getDriverDutyVoucherByIdHandler = async ({ ctx, input: id }: { ctx:
         }
 
         if (res.driver_duty_vouchers.driverName !== "") {
+            logger.warn({ id }, "Driver Duty Voucher already filled");
             throw new TRPCError({
                 code: 'BAD_REQUEST',
                 message: 'Driver Duty Voucher already filled',
@@ -33,6 +36,7 @@ export const getDriverDutyVoucherByIdHandler = async ({ ctx, input: id }: { ctx:
             remainingPayment: bookingsTable.remainingPayment
         }).from(bookingsTable).where(eq(bookingsTable.clientId, res.client_info.id))).at(0)!;
 
+        logger.info({ id }, "getDriverDutyVoucherByIdHandler success");
         return {
             status: 'success',
             data: {
@@ -49,6 +53,7 @@ export const getDriverDutyVoucherByIdHandler = async ({ ctx, input: id }: { ctx:
 }
 
 export const getDriverDutyVouchersInIntervalHandler = async ({ ctx, input }: { ctx: TRPCContext, input: GetDriverDutyVouchersInIntervalInput }) => {
+    logger.info({ input }, "getDriverDutyVouchersInIntervalHandler called");
     try {
         const res = await ctx.db
             .select()
@@ -61,6 +66,8 @@ export const getDriverDutyVouchersInIntervalHandler = async ({ ctx, input }: { c
             .innerJoin(clientInfoTable, eq(driverDutyVouchersTable.clientId, clientInfoTable.id))
             .innerJoin(bookingsTable, eq(driverDutyVouchersTable.clientId, bookingsTable.clientId))
             .orderBy(desc(driverDutyVouchersTable.createdAt));
+
+        logger.info({ count: res.length }, "getDriverDutyVouchersInIntervalHandler success");
         return {
             status: 'success',
             data: {
@@ -77,9 +84,11 @@ export const getDriverDutyVouchersInIntervalHandler = async ({ ctx, input }: { c
 }
 
 export const updateDriverDutyVoucherHandler = async ({ ctx, input }: { ctx: TRPCContext, input: UpdateDriverDutyVoucherInput }) => {
+    logger.info({ input }, "updateDriverDutyVoucherHandler called");
     try {
         // if (ctx.user) {
         const res = await ctx.db.transaction(async (tx) => {
+            logger.info("Updating client info...");
             const clientInfo = await tx.update(clientInfoTable).set({
                 clientName: input.clientName,
                 clientAddress: input.clientAddress,
@@ -87,6 +96,7 @@ export const updateDriverDutyVoucherHandler = async ({ ctx, input }: { ctx: TRPC
                 clientAltPhone: input.clientAltPhone,
             }).where(eq(clientInfoTable.id, input.clientId)).returning();
 
+            logger.info("Updating driver duty voucher...");
             const driverDutyVoucher = await tx.update(driverDutyVouchersTable).set({
                 driverName: input.driverName,
                 vehicleId: input.vehicleId,
