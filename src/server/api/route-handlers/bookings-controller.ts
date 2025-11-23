@@ -59,13 +59,13 @@ export const createVehicleBookingHandler = async ({ ctx, input }: { ctx: TRPCCon
 export const getBookingsInIntervalHandler = async ({ ctx, input }: { ctx: TRPCContext, input: GetBookingsInIntervalSchemaInput }) => {
     logger.info({ input }, "getBookingsInIntervalHandler called");
     try {
-        const res = await ctx.db.
-            select().
-            from(bookingsTable)
+        const res = await ctx.db
+            .select()
+            .from(bookingsTable)
             .where(and(
                 eq(bookingsTable.isDeleted, false),
-                gte(bookingsTable.bookingDate, input.from),
-                lte(bookingsTable.bookingDate, input.to)
+                lte(bookingsTable.travelDateFrom, input.to),
+                gte(bookingsTable.travelDateTo, input.from)
             ))
             .innerJoin(clientInfoTable, eq(bookingsTable.clientId, clientInfoTable.id))
             .innerJoin(driverDutyVouchersTable, eq(bookingsTable.clientId, driverDutyVouchersTable.clientId))

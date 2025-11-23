@@ -18,8 +18,8 @@ export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPC
                     and(
                         eq(bookingsTable.isDeleted, false),
                         eq(bookingsTable.vehicleId, input.vehicleId),
-                        gte(bookingsTable.travelDateFrom, input.from),
-                        lte(bookingsTable.travelDateTo, input.to),
+                        lte(bookingsTable.travelDateFrom, input.to),
+                        gte(bookingsTable.travelDateTo, input.from),
                         input.excludeBookingId ? ne(bookingsTable.id, input.excludeBookingId) : undefined
                     )
                 );
@@ -32,8 +32,8 @@ export async function getVehicleOccupiedDatesHandler({ ctx, input }: { ctx: TRPC
                     and(
                         eq(maintenanceTable.isDeleted, false),
                         eq(maintenanceTable.vehicleId, input.vehicleId),
-                        gte(maintenanceTable.maintenanceDateFrom, input.from),
-                        lte(maintenanceTable.maintenanceDateTo, input.to)
+                        lte(maintenanceTable.maintenanceDateFrom, input.to),
+                        gte(maintenanceTable.maintenanceDateTo, input.from)
                     )
                 );
 
